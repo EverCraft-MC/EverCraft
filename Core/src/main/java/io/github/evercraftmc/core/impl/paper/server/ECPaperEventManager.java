@@ -1,4 +1,4 @@
-package io.github.evercraftmc.core.impl.spigot.server;
+package io.github.evercraftmc.core.impl.paper.server;
 
 import io.github.evercraftmc.core.ECPlayerData;
 import io.github.evercraftmc.core.api.events.ECEvent;
@@ -8,8 +8,8 @@ import io.github.evercraftmc.core.api.events.player.PlayerChatEvent;
 import io.github.evercraftmc.core.api.events.player.PlayerCommandEvent;
 import io.github.evercraftmc.core.api.server.ECEventManager;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
-import io.github.evercraftmc.core.impl.spigot.server.player.ECSpigotPlayer;
-import io.github.evercraftmc.core.impl.spigot.util.ECSpigotComponentFormatter;
+import io.github.evercraftmc.core.impl.paper.server.player.ECPaperPlayer;
+import io.github.evercraftmc.core.impl.paper.util.ECPaperComponentFormatter;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import java.lang.reflect.Method;
@@ -23,9 +23,9 @@ import org.bukkit.event.player.*;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-public class ECSpigotEventManager implements ECEventManager {
+public class ECPaperEventManager implements ECEventManager {
     protected class SpigotListeners implements Listener {
-        protected final @NotNull ECSpigotEventManager parent = ECSpigotEventManager.this;
+        protected final @NotNull ECPaperEventManager parent = ECPaperEventManager.this;
 
         @EventHandler
         public void onPlayerJoin(@NotNull PlayerLoginEvent event) {
@@ -33,25 +33,25 @@ public class ECSpigotEventManager implements ECEventManager {
                 parent.server.getPlugin().getPlayerData().players.put(event.getPlayer().getUniqueId().toString(), new ECPlayerData.Player(event.getPlayer().getUniqueId(), event.getPlayer().getName()));
             }
 
-            io.github.evercraftmc.core.api.events.player.PlayerLoginEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerLoginEvent(new ECSpigotPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString())));
+            io.github.evercraftmc.core.api.events.player.PlayerLoginEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerLoginEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString())));
             parent.emit(newEvent);
 
             if (newEvent.isCancelled()) {
                 event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
-                event.getPlayer().kick(ECSpigotComponentFormatter.stringToComponent(newEvent.getCancelReason()));
+                event.getPlayer().kick(ECPaperComponentFormatter.stringToComponent(newEvent.getCancelReason()));
             }
         }
 
         @EventHandler
         public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
             Component ogMessage = event.joinMessage();
-            io.github.evercraftmc.core.api.events.player.PlayerJoinEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerJoinEvent(new ECSpigotPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), ogMessage != null ? ECSpigotComponentFormatter.componentToString(ogMessage) : "");
+            io.github.evercraftmc.core.api.events.player.PlayerJoinEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerJoinEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), ogMessage != null ? ECPaperComponentFormatter.componentToString(ogMessage) : "");
             parent.emit(newEvent);
 
             event.joinMessage(Component.empty());
 
             if (newEvent.isCancelled()) {
-                event.getPlayer().kick(ECSpigotComponentFormatter.stringToComponent(newEvent.getCancelReason()));
+                event.getPlayer().kick(ECPaperComponentFormatter.stringToComponent(newEvent.getCancelReason()));
             } else if (!newEvent.getJoinMessage().isEmpty()) {
                 parent.server.broadcastMessage(newEvent.getJoinMessage());
             }
@@ -60,7 +60,7 @@ public class ECSpigotEventManager implements ECEventManager {
         @EventHandler
         public void onPlayerLeave(@NotNull PlayerQuitEvent event) {
             Component ogMessage = event.quitMessage();
-            io.github.evercraftmc.core.api.events.player.PlayerLeaveEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerLeaveEvent(new ECSpigotPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), ogMessage != null ? ECSpigotComponentFormatter.componentToString(ogMessage) : "");
+            io.github.evercraftmc.core.api.events.player.PlayerLeaveEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerLeaveEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), ogMessage != null ? ECPaperComponentFormatter.componentToString(ogMessage) : "");
             parent.emit(newEvent);
 
             event.quitMessage(Component.empty());
@@ -72,15 +72,15 @@ public class ECSpigotEventManager implements ECEventManager {
 
         @EventHandler
         public void onPlayerChat(@NotNull AsyncChatEvent event) {
-            String message = ECSpigotComponentFormatter.componentToString(event.message());
+            String message = ECPaperComponentFormatter.componentToString(event.message());
             if (message.isEmpty()) {
                 event.setCancelled(true);
                 return;
             }
 
-            ECSpigotPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
+            ECPaperPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
 
-            PlayerChatEvent newEvent = new PlayerChatEvent(new ECSpigotPlayer(parent.server.getPlugin().getPlayerData().players.get(player.getUuid().toString()), player.getHandle()), message, PlayerChatEvent.MessageType.CHAT, new ArrayList<>(parent.getServer().getOnlinePlayers()));
+            PlayerChatEvent newEvent = new PlayerChatEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(player.getUuid().toString()), player.getHandle()), message, PlayerChatEvent.MessageType.CHAT, new ArrayList<>(parent.getServer().getOnlinePlayers()));
             parent.emit(newEvent);
 
             event.message(Component.empty());
@@ -105,9 +105,9 @@ public class ECSpigotEventManager implements ECEventManager {
                 return;
             }
 
-            ECSpigotPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
+            ECPaperPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
 
-            PlayerCommandEvent newEvent = new PlayerCommandEvent(new ECSpigotPlayer(parent.server.getPlugin().getPlayerData().players.get(player.getUuid().toString()), player.getHandle()), message);
+            PlayerCommandEvent newEvent = new PlayerCommandEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(player.getUuid().toString()), player.getHandle()), message);
             parent.emit(newEvent);
 
             if (newEvent.isCancelled()) {
@@ -125,11 +125,11 @@ public class ECSpigotEventManager implements ECEventManager {
             if (component == null) {
                 return;
             }
-            String message = ECSpigotComponentFormatter.componentToString(component);
+            String message = ECPaperComponentFormatter.componentToString(component);
 
-            ECSpigotPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
+            ECPaperPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
 
-            PlayerChatEvent newEvent = new PlayerChatEvent(new ECSpigotPlayer(parent.server.getPlugin().getPlayerData().players.get(player.getUuid().toString()), player.getHandle()), message, PlayerChatEvent.MessageType.DEATH, new ArrayList<>(parent.getServer().getOnlinePlayers()));
+            PlayerChatEvent newEvent = new PlayerChatEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(player.getUuid().toString()), player.getHandle()), message, PlayerChatEvent.MessageType.DEATH, new ArrayList<>(parent.getServer().getOnlinePlayers()));
             parent.emit(newEvent);
 
             event.deathMessage(Component.empty());
@@ -151,11 +151,11 @@ public class ECSpigotEventManager implements ECEventManager {
             if (component == null || event.getAdvancement().getDisplay() == null || !event.getAdvancement().getDisplay().doesAnnounceToChat() || Boolean.FALSE.equals(event.getPlayer().getWorld().getGameRuleValue(GameRule.ANNOUNCE_ADVANCEMENTS))) {
                 return;
             }
-            String message = ECSpigotComponentFormatter.componentToString(component);
+            String message = ECPaperComponentFormatter.componentToString(component);
 
-            ECSpigotPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
+            ECPaperPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
 
-            PlayerChatEvent newEvent = new PlayerChatEvent(new ECSpigotPlayer(parent.server.getPlugin().getPlayerData().players.get(player.getUuid().toString()), player.getHandle()), message, PlayerChatEvent.MessageType.ADVANCEMENT, new ArrayList<>(parent.getServer().getOnlinePlayers()));
+            PlayerChatEvent newEvent = new PlayerChatEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(player.getUuid().toString()), player.getHandle()), message, PlayerChatEvent.MessageType.ADVANCEMENT, new ArrayList<>(parent.getServer().getOnlinePlayers()));
             parent.emit(newEvent);
 
             event.message(Component.empty());
@@ -172,17 +172,17 @@ public class ECSpigotEventManager implements ECEventManager {
         }
     }
 
-    protected final @NotNull ECSpigotServer server;
+    protected final @NotNull ECPaperServer server;
 
     protected final @NotNull Map<Class<? extends ECEvent>, List<Map.Entry<ECListener, Method>>> listeners = new HashMap<>();
 
-    public ECSpigotEventManager(@NotNull ECSpigotServer server) {
+    public ECPaperEventManager(@NotNull ECPaperServer server) {
         this.server = server;
 
         this.server.getHandle().getPluginManager().registerEvents(new SpigotListeners(), (Plugin) this.server.getPlugin().getHandle());
     }
 
-    public @NotNull ECSpigotServer getServer() {
+    public @NotNull ECPaperServer getServer() {
         return this.server;
     }
 

@@ -1,14 +1,14 @@
-package io.github.evercraftmc.core.impl.spigot.server.player;
+package io.github.evercraftmc.core.impl.paper.server.player;
 
 import io.github.evercraftmc.core.api.server.player.ECConsole;
-import io.github.evercraftmc.core.impl.spigot.util.ECSpigotComponentFormatter;
+import io.github.evercraftmc.core.impl.paper.util.ECPaperComponentFormatter;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-public class ECSpigotConsole implements ECConsole {
+public class ECPaperConsole implements ECConsole {
     protected final @NotNull CommandSender handle;
 
-    public ECSpigotConsole(@NotNull CommandSender handle) {
+    public ECPaperConsole(@NotNull CommandSender handle) {
         this.handle = handle;
     }
 
@@ -23,6 +23,6 @@ public class ECSpigotConsole implements ECConsole {
 
     @Override
     public void sendMessage(@NotNull String message) {
-        this.handle.sendMessage(ECSpigotComponentFormatter.stringToComponent(message));
+        this.handle.sendMessage(ECPaperComponentFormatter.stringToComponent(message));
     }
 }

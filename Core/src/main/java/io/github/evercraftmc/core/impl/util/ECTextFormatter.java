@@ -8,38 +8,22 @@ public class ECTextFormatter {
     public static final char TO_COLOR_CHAR = '§';
 
     protected static final @NotNull String ALL_CODES = "0123456789AaBbCcDdEeFfKkLlMmNnOoRr";
-    protected static final @NotNull Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)[" + TO_COLOR_CHAR + "&][0-9A-FK-OR]");
+
+    protected static final @NotNull Pattern TRANSLATE_COLOR_PATTERN = Pattern.compile("[" + FROM_COLOR_CHAR + "]([" + ALL_CODES + "])");
+    protected static final @NotNull String TRANSLATE_COLOR_REPLACEMENT = TO_COLOR_CHAR + "$1";
+    protected static final @NotNull Pattern UNTRANSLATE_COLOR_PATTERN = Pattern.compile("[" + TO_COLOR_CHAR + "]([" + ALL_CODES + "])");
+    protected static final @NotNull String UNTRANSLATE_COLOR_REPLACEMENT = FROM_COLOR_CHAR + "$1";
+    protected static final @NotNull Pattern STRIP_COLOR_PATTERN = Pattern.compile("[" + TO_COLOR_CHAR + FROM_COLOR_CHAR + "][" + ALL_CODES + "]");
 
     private ECTextFormatter() {
     }
 
     public static @NotNull String translateColors(@NotNull String input) {
-        char[] inputBytes = input.toCharArray();
-
-        for (int i = 0; i < inputBytes.length - 1; i++) {
-            if (inputBytes[i] == FROM_COLOR_CHAR && ALL_CODES.indexOf(inputBytes[i + 1]) > -1) {
-                inputBytes[i] = TO_COLOR_CHAR;
-                inputBytes[i + 1] = Character.toLowerCase(inputBytes[i + 1]);
-
-                i++;
-            }
-        }
-
-        return new String(inputBytes);
+        return TRANSLATE_COLOR_PATTERN.matcher(input).replaceAll(TRANSLATE_COLOR_REPLACEMENT);
     }
 
     public static @NotNull String untranslateColors(@NotNull String input) {
-        char[] inputBytes = input.toCharArray();
-
-        for (int i = 0; i < inputBytes.length - 1; i++) {
-            if (inputBytes[i] == TO_COLOR_CHAR && ALL_CODES.indexOf(inputBytes[i + 1]) > -1) {
-                inputBytes[i] = FROM_COLOR_CHAR;
-
-                i++;
-            }
-        }
-
-        return new String(inputBytes);
+        return UNTRANSLATE_COLOR_PATTERN.matcher(input).replaceAll(UNTRANSLATE_COLOR_REPLACEMENT);
     }
 
     public static @NotNull String stripColors(@NotNull String input) {

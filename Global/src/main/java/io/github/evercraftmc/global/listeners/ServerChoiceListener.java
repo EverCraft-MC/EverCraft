@@ -5,8 +5,8 @@ import io.github.evercraftmc.core.api.events.ECHandlerOrder;
 import io.github.evercraftmc.core.api.events.ECListener;
 import io.github.evercraftmc.core.api.events.proxy.player.PlayerProxyJoinEvent;
 import io.github.evercraftmc.core.api.events.proxy.player.PlayerServerConnectedEvent;
-import io.github.evercraftmc.core.impl.bungee.server.ECBungeeServer;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
+import io.github.evercraftmc.core.impl.waterfall.server.ECWaterfallServer;
 import io.github.evercraftmc.global.GlobalModule;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,11 +19,11 @@ public class ServerChoiceListener implements ECListener {
 
     @ECHandler(order=ECHandlerOrder.BEFORE)
     public void onPlayerJoin(@NotNull PlayerProxyJoinEvent event) {
-        String server = ((ECBungeeServer) parent.getPlugin().getServer()).getDefaultServer();
+        String server = ((ECWaterfallServer) parent.getPlugin().getServer()).getDefaultServer();
 
         if (event.getPlayer().getServerAddress() != null) {
             String[] address = event.getPlayer().getServerAddress().getHostString().split("\\.");
-            if (address.length > 2 && !address[0].equalsIgnoreCase(((ECBungeeServer) parent.getPlugin().getServer()).getFallbackServer()) && ((ECBungeeServer) parent.getPlugin().getServer()).getServer(address[0].toLowerCase())) {
+            if (address.length > 2 && !address[0].equalsIgnoreCase(((ECWaterfallServer) parent.getPlugin().getServer()).getFallbackServer()) && ((ECWaterfallServer) parent.getPlugin().getServer()).getServer(address[0].toLowerCase())) {
                 server = address[0].toLowerCase();
             }
         }

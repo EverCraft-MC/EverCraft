@@ -1,4 +1,4 @@
-package io.github.evercraftmc.core.impl.bungee.util;
+package io.github.evercraftmc.core.impl.waterfall.util;
 
 import io.github.evercraftmc.core.ECPluginManager;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
@@ -9,12 +9,12 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.TranslatableComponent;
 import org.jetbrains.annotations.NotNull;
 
-public class ECBungeeComponentFormatter {
+public class ECWaterfallComponentFormatter {
     protected static final char COLOR_CHAR = ECTextFormatter.TO_COLOR_CHAR;
 
     protected static final @NotNull String ALL_CODES = "0123456789AaBbCcDdEeFfKkLlMmNnOoRr";
 
-    private ECBungeeComponentFormatter() {
+    private ECWaterfallComponentFormatter() {
     }
 
     public static @NotNull BaseComponent stringToComponent(@NotNull String string) {
@@ -154,10 +154,8 @@ public class ECBungeeComponentFormatter {
             string.append(String.format(key, args));
         }
 
-        if (component.getExtra() != null) {
-            for (BaseComponent child : component.getExtra()) {
-                string.append(componentToString(child));
-            }
+        for (BaseComponent child : component.getExtra()) {
+            string.append(componentToString(child));
         }
 
         return string.toString();

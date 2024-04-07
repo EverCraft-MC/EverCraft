@@ -1,4 +1,4 @@
-package io.github.evercraftmc.core.impl.bungee.server;
+package io.github.evercraftmc.core.impl.paper.server;
 
 import io.github.evercraftmc.core.api.commands.ECCommand;
 import io.github.evercraftmc.core.api.events.ECHandler;
@@ -7,47 +7,51 @@ import io.github.evercraftmc.core.api.events.messaging.MessageEvent;
 import io.github.evercraftmc.core.api.server.ECCommandManager;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
 import io.github.evercraftmc.core.impl.ECEnvironmentType;
-import io.github.evercraftmc.core.impl.bungee.util.ECBungeeComponentFormatter;
+import io.github.evercraftmc.core.impl.paper.util.ECPaperComponentFormatter;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
 import io.github.evercraftmc.core.messaging.ECMessage;
 import io.github.evercraftmc.core.messaging.ECMessageType;
 import io.github.evercraftmc.core.messaging.ECRecipient;
 import java.io.*;
 import java.util.*;
-import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.plugin.Command;
-import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.api.plugin.TabExecutor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permission;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ECBungeeCommandManager implements ECCommandManager {
-    protected class CommandInter extends Command implements TabExecutor {
-        protected final @NotNull ECBungeeCommandManager parent = ECBungeeCommandManager.this;
+public class ECPaperCommandManager implements ECCommandManager {
+    protected class CommandInter extends Command {
+        protected final @NotNull ECPaperCommandManager parent = ECPaperCommandManager.this;
 
         protected final @NotNull ECCommand command;
         protected final boolean forwardToOther;
 
         public CommandInter(@NotNull ECCommand command, boolean distinguishServer, boolean forwardToOther) {
-            super((distinguishServer ? "b" : "") + command.getName().toLowerCase(), command.getPermission(), CommandInter.alias(command.getName(), command.getAlias(), distinguishServer).toArray(new String[] { }));
+            super((distinguishServer ? "s" : "") + command.getName());
+
+            this.setName((distinguishServer ? "s" : "") + command.getName().toLowerCase());
+            this.setDescription(command.getDescription());
+            this.setAliases(CommandInter.alias(command.getName(), command.getAlias(), distinguishServer));
+            this.setPermission(command.getPermission() != null ? command.getPermission().toLowerCase() : null);
 
             this.command = command;
             this.forwardToOther = forwardToOther;
         }
 
         @Override
-        public void execute(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
-            if (sender instanceof ProxiedPlayer bungeePlayer) {
-                if (this.getPermission() == null || sender.hasPermission(this.getPermission())) {
-                    this.command.run(parent.server.getOnlinePlayer(bungeePlayer.getUniqueId()), Arrays.asList(args), true);
+        public boolean execute(@NotNull CommandSender sender, @NotNull String label, @NotNull String @NotNull [] args) {
+            if (sender instanceof Player spigotPlayer) {
+                if (this.getPermission() == null || sender.hasPermission(this.getPermission()) || sender.isOp()) {
+                    this.command.run(parent.server.getOnlinePlayer(spigotPlayer.getUniqueId()), Arrays.asList(args), true);
 
                     if (this.forwardToOther) {
                         try {
                             ByteArrayOutputStream commandMessageData = new ByteArrayOutputStream();
                             DataOutputStream commandMessage = new DataOutputStream(commandMessageData);
                             commandMessage.writeInt(ECMessageType.GLOBAL_COMMAND);
-                            commandMessage.writeUTF(bungeePlayer.getUniqueId().toString());
+                            commandMessage.writeUTF(spigotPlayer.getUniqueId().toString());
                             commandMessage.writeUTF(this.getName());
                             commandMessage.writeInt(args.length);
                             for (String arg : args) {
@@ -55,24 +59,26 @@ public class ECBungeeCommandManager implements ECCommandManager {
                             }
                             commandMessage.close();
 
-                            parent.server.getPlugin().getMessenger().send(ECRecipient.fromEnvironmentType(ECEnvironmentType.BACKEND), commandMessageData.toByteArray());
+                            parent.server.getPlugin().getMessenger().send(ECRecipient.fromEnvironmentType(ECEnvironmentType.PROXY), commandMessageData.toByteArray());
                         } catch (IOException e) {
                             parent.server.getPlugin().getLogger().error("[Messenger] Failed to send message", e);
                         }
                     }
                 } else {
-                    sender.sendMessage(ECBungeeComponentFormatter.stringToComponent(ECTextFormatter.translateColors("&cYou do not have permission to run that command")));
+                    sender.sendMessage(ECPaperComponentFormatter.stringToComponent(ECTextFormatter.translateColors("&cYou do not have permission to run that command")));
                 }
             } else {
                 this.command.run(parent.server.getConsole(), Arrays.asList(args), true);
             }
+
+            return true;
         }
 
         @Override
-        public @NotNull Iterable<String> onTabComplete(@NotNull CommandSender sender, @NotNull String[] args) {
-            if (sender instanceof ProxiedPlayer bungeePlayer) {
-                if (this.getPermission() == null || sender.hasPermission(this.getPermission())) {
-                    return this.command.tabComplete(parent.server.getOnlinePlayer(bungeePlayer.getUniqueId()), Arrays.asList(args));
+        public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
+            if (sender instanceof Player spigotPlayer) {
+                if (this.getPermission() == null || sender.hasPermission(this.getPermission()) || sender.isOp()) {
+                    return this.command.tabComplete(parent.server.getOnlinePlayer(spigotPlayer.getUniqueId()), Arrays.asList(args));
                 } else {
                     return List.of();
                 }
@@ -84,27 +90,27 @@ public class ECBungeeCommandManager implements ECCommandManager {
         private static @NotNull List<String> alias(@NotNull String uName, @NotNull List<String> uAliases, boolean distinguishServer) {
             ArrayList<String> aliases = new ArrayList<>();
 
-            aliases.add("evercraft:" + (distinguishServer ? "b" : "") + uName.toLowerCase());
+            aliases.add("evercraft:" + (distinguishServer ? "s" : "") + uName.toLowerCase());
 
             for (String alias : uAliases) {
-                aliases.add((distinguishServer ? "b" : "") + alias.toLowerCase());
-                aliases.add("evercraft:" + (distinguishServer ? "b" : "") + alias.toLowerCase());
+                aliases.add((distinguishServer ? "s" : "") + alias.toLowerCase());
+                aliases.add("evercraft:" + (distinguishServer ? "s" : "") + alias.toLowerCase());
             }
 
             return aliases;
         }
     }
 
-    protected final @NotNull ECBungeeServer server;
+    protected final @NotNull ECPaperServer server;
 
     protected final @NotNull Map<String, ECCommand> commands = new HashMap<>();
     protected final @NotNull Map<String, CommandInter> interCommands = new HashMap<>();
 
-    public ECBungeeCommandManager(@NotNull ECBungeeServer server) {
+    public ECPaperCommandManager(@NotNull ECPaperServer server) {
         this.server = server;
 
         this.server.getEventManager().register(new ECListener() {
-            private final ECBungeeCommandManager parent = ECBungeeCommandManager.this;
+            private final ECPaperCommandManager parent = ECPaperCommandManager.this;
 
             @ECHandler
             public void onMessage(@NotNull MessageEvent event) {
@@ -143,13 +149,13 @@ public class ECBungeeCommandManager implements ECCommandManager {
         });
     }
 
-    public @NotNull ECBungeeServer getServer() {
+    public @NotNull ECPaperServer getServer() {
         return this.server;
     }
 
     @Override
     public @NotNull List<ECCommand> getAll() {
-        return new ArrayList<>(this.commands.values());
+        return List.copyOf(this.commands.values());
     }
 
     @Override
@@ -175,7 +181,14 @@ public class ECBungeeCommandManager implements ECCommandManager {
             this.commands.put(command.getName().toLowerCase(), command);
             this.interCommands.put(command.getName().toLowerCase(), interCommand);
 
-            this.server.getHandle().getPluginManager().registerCommand((Plugin) this.server.getPlugin().getHandle(), interCommand);
+            this.server.getHandle().getCommandMap().register("evercraft", interCommand);
+            this.interCommands.get(command.getName().toLowerCase()).register(this.server.getHandle().getCommandMap());
+
+            for (String permission : command.getExtraPermissions()) {
+                if (this.server.getHandle().getPluginManager().getPermission(permission) == null) {
+                    this.server.getHandle().getPluginManager().addPermission(new Permission(permission));
+                }
+            }
 
             return command;
         } else {
@@ -186,7 +199,7 @@ public class ECBungeeCommandManager implements ECCommandManager {
     @Override
     public @NotNull ECCommand unregister(@NotNull ECCommand command) {
         if (this.commands.containsKey(command.getName().toLowerCase())) {
-            this.server.getHandle().getPluginManager().unregisterCommand(this.interCommands.get(command.getName().toLowerCase()));
+            this.interCommands.get(command.getName().toLowerCase()).unregister(this.server.getHandle().getCommandMap());
 
             this.commands.remove(command.getName().toLowerCase());
             this.interCommands.remove(command.getName().toLowerCase());

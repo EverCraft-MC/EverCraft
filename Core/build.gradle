@@ -17,8 +17,13 @@ repositories {
 dependencies {
     implementation "io.github.kale_ko:ejcl:${ejcl_version}"
 
-    compileOnly "io.github.waterfallmc:waterfall-api:${waterfall_version}"
-    compileOnly "io.papermc.paper:paper-api:${paper_version}"
+    compileOnly("io.papermc.paper:paper-api:${paper_version}") {
+        exclude group: "net.md-5", module: "bungeecord-chat"
+    }
+    compileOnly("com.velocitypowered:velocity-api:${velocity_version}")
+    compileOnly("io.github.waterfallmc:waterfall-api:${waterfall_version}") {
+        exclude group: "net.md-5", module: "bungeecord-chat"
+    }
 
     compileOnly "org.slf4j:slf4j-api:2.0.9"
 }
@@ -40,7 +45,7 @@ build {
 processResources {
     inputs.property "version", core_version
 
-    filesMatching(["bungee.yml", "plugin.yml"]) {
+    filesMatching(["waterfall.yml", "plugin.yml"]) {
         expand "version": core_version
     }
 }

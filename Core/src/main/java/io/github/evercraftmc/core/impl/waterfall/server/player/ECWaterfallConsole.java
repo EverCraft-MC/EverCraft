@@ -1,14 +1,14 @@
-package io.github.evercraftmc.core.impl.bungee.server.player;
+package io.github.evercraftmc.core.impl.waterfall.server.player;
 
 import io.github.evercraftmc.core.api.server.player.ECConsole;
-import io.github.evercraftmc.core.impl.bungee.util.ECBungeeComponentFormatter;
+import io.github.evercraftmc.core.impl.waterfall.util.ECWaterfallComponentFormatter;
 import net.md_5.bungee.api.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-public class ECBungeeConsole implements ECConsole {
+public class ECWaterfallConsole implements ECConsole {
     protected final @NotNull CommandSender handle;
 
-    public ECBungeeConsole(@NotNull CommandSender handle) {
+    public ECWaterfallConsole(@NotNull CommandSender handle) {
         this.handle = handle;
     }
 
@@ -23,6 +23,6 @@ public class ECBungeeConsole implements ECConsole {
 
     @Override
     public void sendMessage(@NotNull String message) {
-        this.handle.sendMessage(ECBungeeComponentFormatter.stringToComponent(message));
+        this.handle.sendMessage(ECWaterfallComponentFormatter.stringToComponent(message));
     }
 }

@@ -1,11 +1,11 @@
-package io.github.evercraftmc.core.impl.spigot.server;
+package io.github.evercraftmc.core.impl.paper.server;
 
 import io.github.evercraftmc.core.api.server.ECScheduler;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
-public class ECSpigotScheduler implements ECScheduler {
+public class ECPaperScheduler implements ECScheduler {
     public static class ECSpigotTask implements ECTask {
         protected final @NotNull BukkitTask handle;
 
@@ -22,13 +22,13 @@ public class ECSpigotScheduler implements ECScheduler {
         }
     }
 
-    protected final @NotNull ECSpigotServer server;
+    protected final @NotNull ECPaperServer server;
 
-    public ECSpigotScheduler(@NotNull ECSpigotServer server) {
+    public ECPaperScheduler(@NotNull ECPaperServer server) {
         this.server = server;
     }
 
-    public @NotNull ECSpigotServer getServer() {
+    public @NotNull ECPaperServer getServer() {
         return this.server;
     }
 

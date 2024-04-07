@@ -1,4 +1,4 @@
-main: io.github.evercraftmc.core.impl.bungee.ECBungeePluginLoader
+main: io.github.evercraftmc.core.impl.waterfall.ECWaterfallPluginLoader
 
 name: "EverCraft"
 description: "The EverCraft plugin"

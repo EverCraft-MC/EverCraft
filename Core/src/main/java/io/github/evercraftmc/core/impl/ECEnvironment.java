@@ -3,10 +3,11 @@ package io.github.evercraftmc.core.impl;
 import org.jetbrains.annotations.NotNull;
 
 public enum ECEnvironment {
-    BUNGEE(ECEnvironmentType.PROXY),
-    SPIGOT(ECEnvironmentType.BACKEND);
+    PAPER(ECEnvironmentType.BACKEND),
+    VELOCITY(ECEnvironmentType.PROXY),
+    WATERFALL(ECEnvironmentType.PROXY);
 
-    private final @NotNull ECEnvironmentType type;
+    final @NotNull ECEnvironmentType type;
 
     ECEnvironment(@NotNull ECEnvironmentType type) {
         this.type = type;

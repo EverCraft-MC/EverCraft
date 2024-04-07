@@ -1,12 +1,12 @@
-package io.github.evercraftmc.core.impl.bungee.server;
+package io.github.evercraftmc.core.impl.waterfall.server;
 
 import io.github.evercraftmc.core.ECPlayerData;
 import io.github.evercraftmc.core.ECPlugin;
 import io.github.evercraftmc.core.api.server.ECServer;
 import io.github.evercraftmc.core.impl.ECEnvironment;
 import io.github.evercraftmc.core.impl.ECEnvironmentType;
-import io.github.evercraftmc.core.impl.bungee.server.player.ECBungeeConsole;
-import io.github.evercraftmc.core.impl.bungee.server.player.ECBungeePlayer;
+import io.github.evercraftmc.core.impl.waterfall.server.player.ECWaterfallConsole;
+import io.github.evercraftmc.core.impl.waterfall.server.player.ECWaterfallPlayer;
 import java.util.*;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.Connection;
@@ -14,25 +14,25 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ECBungeeServer implements ECServer {
+public class ECWaterfallServer implements ECServer {
     protected final @NotNull ECPlugin plugin;
 
     protected final @NotNull ProxyServer handle;
 
-    protected final @NotNull ECBungeeCommandManager commandManager;
-    protected final @NotNull ECBungeeEventManager eventManager;
+    protected final @NotNull ECWaterfallCommandManager commandManager;
+    protected final @NotNull ECWaterfallEventManager eventManager;
 
-    protected final @NotNull ECBungeeScheduler scheduler;
+    protected final @NotNull ECWaterfallScheduler scheduler;
 
-    public ECBungeeServer(@NotNull ECPlugin plugin, @NotNull ProxyServer handle) {
+    public ECWaterfallServer(@NotNull ECPlugin plugin, @NotNull ProxyServer handle) {
         this.plugin = plugin;
 
         this.handle = handle;
 
-        this.eventManager = new ECBungeeEventManager(this);
-        this.commandManager = new ECBungeeCommandManager(this);
+        this.eventManager = new ECWaterfallEventManager(this);
+        this.commandManager = new ECWaterfallCommandManager(this);
 
-        this.scheduler = new ECBungeeScheduler(this);
+        this.scheduler = new ECWaterfallScheduler(this);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class ECBungeeServer implements ECServer {
 
     @Override
     public @NotNull ECEnvironment getEnvironment() {
-        return ECEnvironment.BUNGEE;
+        return ECEnvironment.WATERFALL;
     }
 
     @Override
@@ -70,30 +70,30 @@ public class ECBungeeServer implements ECServer {
     }
 
     @Override
-    public @NotNull Collection<ECBungeePlayer> getPlayers() {
-        ArrayList<ECBungeePlayer> players = new ArrayList<>();
+    public @NotNull Collection<ECWaterfallPlayer> getPlayers() {
+        ArrayList<ECWaterfallPlayer> players = new ArrayList<>();
 
         for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) {
-            players.add(new ECBungeePlayer(player));
+            players.add(new ECWaterfallPlayer(player));
         }
 
         return Collections.unmodifiableCollection(players);
     }
 
     @Override
-    public ECBungeePlayer getPlayer(@NotNull UUID uuid) {
+    public ECWaterfallPlayer getPlayer(@NotNull UUID uuid) {
         if (this.plugin.getPlayerData().players.containsKey(uuid.toString())) {
-            return new ECBungeePlayer(this.plugin.getPlayerData().players.get(uuid.toString()));
+            return new ECWaterfallPlayer(this.plugin.getPlayerData().players.get(uuid.toString()));
         }
 
         return null;
     }
 
     @Override
-    public ECBungeePlayer getPlayer(@NotNull String name) {
+    public ECWaterfallPlayer getPlayer(@NotNull String name) {
         for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) {
             if (player.name.equalsIgnoreCase(name)) {
-                return new ECBungeePlayer(player);
+                return new ECWaterfallPlayer(player);
             }
         }
 
@@ -101,12 +101,12 @@ public class ECBungeeServer implements ECServer {
     }
 
     @Override
-    public @NotNull Collection<ECBungeePlayer> getOnlinePlayers() {
-        ArrayList<ECBungeePlayer> players = new ArrayList<>();
+    public @NotNull Collection<ECWaterfallPlayer> getOnlinePlayers() {
+        ArrayList<ECWaterfallPlayer> players = new ArrayList<>();
 
         for (ProxiedPlayer bungeePlayer : this.handle.getPlayers()) {
             if (this.plugin.getPlayerData().players.containsKey(bungeePlayer.getUniqueId().toString())) {
-                players.add(new ECBungeePlayer(this.plugin.getPlayerData().players.get(bungeePlayer.getUniqueId().toString()), bungeePlayer));
+                players.add(new ECWaterfallPlayer(this.plugin.getPlayerData().players.get(bungeePlayer.getUniqueId().toString()), bungeePlayer));
             }
         }
 
@@ -114,22 +114,22 @@ public class ECBungeeServer implements ECServer {
     }
 
     @Override
-    public ECBungeePlayer getOnlinePlayer(@NotNull UUID uuid) {
+    public ECWaterfallPlayer getOnlinePlayer(@NotNull UUID uuid) {
         ProxiedPlayer bungeePlayer = this.handle.getPlayer(uuid);
         if (bungeePlayer != null && this.plugin.getPlayerData().players.containsKey(uuid.toString())) {
-            return new ECBungeePlayer(this.plugin.getPlayerData().players.get(uuid.toString()), bungeePlayer);
+            return new ECWaterfallPlayer(this.plugin.getPlayerData().players.get(uuid.toString()), bungeePlayer);
         }
 
         return null;
     }
 
     @Override
-    public ECBungeePlayer getOnlinePlayer(@NotNull String name) {
+    public ECWaterfallPlayer getOnlinePlayer(@NotNull String name) {
         ProxiedPlayer bungeePlayer = this.handle.getPlayer(name);
         if (bungeePlayer != null) {
             for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) {
                 if (player.name.equalsIgnoreCase(name)) {
-                    return new ECBungeePlayer(player, bungeePlayer);
+                    return new ECWaterfallPlayer(player, bungeePlayer);
                 }
             }
         }
@@ -137,12 +137,12 @@ public class ECBungeeServer implements ECServer {
         return null;
     }
 
-    public ECBungeePlayer getOnlinePlayer(@NotNull Connection connection) {
+    public ECWaterfallPlayer getOnlinePlayer(@NotNull Connection connection) {
         for (ProxiedPlayer bungeePlayer : this.handle.getPlayers()) {
             if (bungeePlayer.getPendingConnection().getSocketAddress().equals(connection.getSocketAddress())) {
                 for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) {
                     if (player.uuid.equals(bungeePlayer.getUniqueId())) {
-                        return new ECBungeePlayer(player, bungeePlayer);
+                        return new ECWaterfallPlayer(player, bungeePlayer);
                     }
                 }
 
@@ -179,22 +179,22 @@ public class ECBungeeServer implements ECServer {
     }
 
     @Override
-    public @NotNull ECBungeeConsole getConsole() {
-        return new ECBungeeConsole(this.handle.getConsole());
+    public @NotNull ECWaterfallConsole getConsole() {
+        return new ECWaterfallConsole(this.handle.getConsole());
     }
 
     @Override
-    public @NotNull ECBungeeCommandManager getCommandManager() {
+    public @NotNull ECWaterfallCommandManager getCommandManager() {
         return this.commandManager;
     }
 
     @Override
-    public @NotNull ECBungeeEventManager getEventManager() {
+    public @NotNull ECWaterfallEventManager getEventManager() {
         return this.eventManager;
     }
 
     @Override
-    public @NotNull ECBungeeScheduler getScheduler() {
+    public @NotNull ECWaterfallScheduler getScheduler() {
         return this.scheduler;
     }
 }

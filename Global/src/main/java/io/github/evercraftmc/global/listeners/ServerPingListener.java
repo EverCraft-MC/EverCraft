@@ -5,8 +5,8 @@ import io.github.evercraftmc.core.api.events.ECHandlerOrder;
 import io.github.evercraftmc.core.api.events.ECListener;
 import io.github.evercraftmc.core.api.events.proxy.player.PlayerProxyPingEvent;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
-import io.github.evercraftmc.core.impl.bungee.server.ECBungeeServer;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
+import io.github.evercraftmc.core.impl.waterfall.server.ECWaterfallServer;
 import io.github.evercraftmc.global.GlobalModule;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,19 +22,19 @@ public class ServerPingListener implements ECListener {
 
     @ECHandler(order=ECHandlerOrder.BEFORE)
     public void onPlayerPing(@NotNull PlayerProxyPingEvent event) {
-        String server = ((ECBungeeServer) parent.getPlugin().getServer()).getDefaultServer();
+        String server = ((ECWaterfallServer) parent.getPlugin().getServer()).getDefaultServer();
         boolean isDefault = true;
 
         if (event.getServerAddress() != null) {
             String[] address = event.getServerAddress().getHostString().split("\\.");
-            if (address.length > 2 && !address[0].equalsIgnoreCase(((ECBungeeServer) parent.getPlugin().getServer()).getFallbackServer()) && ((ECBungeeServer) parent.getPlugin().getServer()).getServer(address[0].toLowerCase())) {
+            if (address.length > 2 && !address[0].equalsIgnoreCase(((ECWaterfallServer) parent.getPlugin().getServer()).getFallbackServer()) && ((ECWaterfallServer) parent.getPlugin().getServer()).getServer(address[0].toLowerCase())) {
                 server = address[0].toLowerCase();
                 isDefault = false;
             }
         }
 
         String[] motd = new String[2];
-        motd[0] = ECTextFormatter.translateColors("&r&6--------[ &3&lEverCraft &r&7" + ((ECBungeeServer) parent.getPlugin().getServer()).getAllMinecraftVersions() + " &r&6]--------");
+        motd[0] = ECTextFormatter.translateColors("&r&6--------[ &3&lEverCraft &r&7" + ((ECWaterfallServer) parent.getPlugin().getServer()).getAllMinecraftVersions() + " &r&6]--------");
         if (isDefault) {
             motd[1] = ECTextFormatter.translateColors("&7Lots of fun minigames!");
         } else {

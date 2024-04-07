@@ -1,26 +1,25 @@
-package io.github.evercraftmc.core.impl.bungee.server.player;
+package io.github.evercraftmc.core.impl.paper.server.player;
 
 import io.github.evercraftmc.core.ECPlayerData;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
-import io.github.evercraftmc.core.impl.bungee.util.ECBungeeComponentFormatter;
+import io.github.evercraftmc.core.impl.paper.util.ECPaperComponentFormatter;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.UUID;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ECBungeePlayer implements ECPlayer {
-    protected final ProxiedPlayer handle;
+public class ECPaperPlayer implements ECPlayer {
+    protected final Player handle;
 
     protected final @NotNull UUID uuid;
     protected final @NotNull String name;
 
     protected @NotNull String displayName;
 
-    public ECBungeePlayer(@NotNull ECPlayerData.Player data) {
+    public ECPaperPlayer(@NotNull ECPlayerData.Player data) {
         this.uuid = data.uuid;
         this.name = data.name;
 
@@ -29,7 +28,7 @@ public class ECBungeePlayer implements ECPlayer {
         this.handle = null;
     }
 
-    public ECBungeePlayer(@NotNull ECPlayerData.Player data, @NotNull ProxiedPlayer handle) {
+    public ECPaperPlayer(@NotNull ECPlayerData.Player data, @NotNull Player handle) {
         this.uuid = data.uuid;
         this.name = data.name;
 
@@ -38,7 +37,7 @@ public class ECBungeePlayer implements ECPlayer {
         this.handle = handle;
     }
 
-    public ProxiedPlayer getHandle() {
+    public Player getHandle() {
         return this.handle;
     }
 
@@ -64,25 +63,24 @@ public class ECBungeePlayer implements ECPlayer {
 
     @Override
     public @NotNull String getOnlineDisplayName() {
-        return this.handle.getDisplayName();
+        return ECPaperComponentFormatter.componentToString(this.handle.displayName());
     }
 
     @Override
     public void setOnlineDisplayName(@NotNull String displayName) {
         this.setDisplayName(displayName);
 
-        this.handle.setDisplayName(displayName);
+        this.handle.customName(ECPaperComponentFormatter.stringToComponent(displayName));
+        this.handle.displayName(ECPaperComponentFormatter.stringToComponent(displayName));
+        this.handle.playerListName(ECPaperComponentFormatter.stringToComponent(displayName));
     }
 
     @Override
     public @Nullable InetAddress getAddress() {
-        SocketAddress socketAddress = this.handle.getPendingConnection().getSocketAddress();
-        if (socketAddress == null) {
-            return null;
-        }
+        InetSocketAddress socketAddress = this.handle.getAddress();
 
-        if (socketAddress instanceof InetSocketAddress address) {
-            return address.getAddress();
+        if (socketAddress != null) {
+            return socketAddress.getAddress();
         } else {
             return null;
         }
@@ -90,12 +88,12 @@ public class ECBungeePlayer implements ECPlayer {
 
     @Override
     public @Nullable InetSocketAddress getServerAddress() {
-        return this.handle.getPendingConnection().getVirtualHost();
+        return this.handle.getVirtualHost();
     }
 
     @Override
     public @Nullable String getServer() {
-        return this.handle.getServer() != null ? this.handle.getServer().getInfo().getName().toLowerCase() : null;
+        throw new UnsupportedOperationException("Server is backend");
     }
 
     @Override
@@ -105,11 +103,11 @@ public class ECBungeePlayer implements ECPlayer {
 
     @Override
     public void sendMessage(@NotNull String message) {
-        this.handle.sendMessage(ECBungeeComponentFormatter.stringToComponent(message));
+        this.handle.sendMessage(ECPaperComponentFormatter.stringToComponent(message));
     }
 
     @Override
     public void kick(@NotNull String message) {
-        this.handle.disconnect(ECBungeeComponentFormatter.stringToComponent(message));
+        this.handle.kick(ECPaperComponentFormatter.stringToComponent(message));
     }
 }

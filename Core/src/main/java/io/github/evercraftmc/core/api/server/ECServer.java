@@ -10,29 +10,37 @@ import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 
 public interface ECServer {
-    @NotNull ECPlugin getPlugin();
+    @NotNull
+    ECPlugin getPlugin();
 
-    @NotNull String getMinecraftVersion();
+    @NotNull
+    String getMinecraftVersion();
 
-    @NotNull String getSoftwareVersion();
+    @NotNull
+    String getSoftwareVersion();
 
-    @NotNull ECEnvironment getEnvironment();
+    @NotNull
+    ECEnvironment getEnvironment();
 
-    @NotNull ECEnvironmentType getEnvironmentType();
+    @NotNull
+    ECEnvironmentType getEnvironmentType();
 
-    @NotNull Collection<? extends ECPlayer> getPlayers();
+    @NotNull
+    Collection<? extends ECPlayer> getPlayers();
 
     ECPlayer getPlayer(@NotNull UUID uuid);
 
     ECPlayer getPlayer(@NotNull String name);
 
-    @NotNull Collection<? extends ECPlayer> getOnlinePlayers();
+    @NotNull
+    Collection<? extends ECPlayer> getOnlinePlayers();
 
     ECPlayer getOnlinePlayer(@NotNull UUID uuid);
 
     ECPlayer getOnlinePlayer(@NotNull String name);
 
-    @NotNull ECConsole getConsole();
+    @NotNull
+    ECConsole getConsole();
 
     default void broadcastMessage(@NotNull String message) {
         for (ECPlayer player : this.getOnlinePlayers()) {
@@ -40,9 +48,12 @@ public interface ECServer {
         }
     }
 
-    @NotNull ECCommandManager getCommandManager();
+    @NotNull
+    ECCommandManager getCommandManager();
 
-    @NotNull ECEventManager getEventManager();
+    @NotNull
+    ECEventManager getEventManager();
 
-    @NotNull ECScheduler getScheduler();
+    @NotNull
+    ECScheduler getScheduler();
 }

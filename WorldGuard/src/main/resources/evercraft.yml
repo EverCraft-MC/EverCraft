@@ -3,5 +3,5 @@ entry: io.github.evercraftmc.worldguard.WorldGuardModule
 name: "WorldGuard"
 version: "${version}"
 
+environment: PAPER
 depends: [ "Core", "Global" ]
-environment: SPIGOT

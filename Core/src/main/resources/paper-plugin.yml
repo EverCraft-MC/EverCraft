@@ -1,4 +1,4 @@
-main: io.github.evercraftmc.core.impl.spigot.ECSpigotPluginLoader
+main: io.github.evercraftmc.core.impl.paper.ECPaperPluginLoader
 
 name: "EverCraft"
 description: "The EverCraft plugin"

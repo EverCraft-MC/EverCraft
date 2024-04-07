@@ -14,7 +14,7 @@ public class WorldGuardModule extends ECModule {
     protected final @NotNull List<ECListener> listeners = new ArrayList<>();
 
     public void load() {
-        if (this.plugin.getEnvironment() != ECEnvironment.SPIGOT) {
+        if (this.plugin.getEnvironment() != ECEnvironment.PAPER) {
             throw new RuntimeException("Unsupported environment");
         }
 

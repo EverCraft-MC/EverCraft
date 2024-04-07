@@ -1,4 +1,4 @@
-package io.github.evercraftmc.core.impl.bungee.server;
+package io.github.evercraftmc.core.impl.waterfall.server;
 
 import io.github.evercraftmc.core.api.server.ECScheduler;
 import java.util.concurrent.TimeUnit;
@@ -6,7 +6,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 import org.jetbrains.annotations.NotNull;
 
-public class ECBungeeScheduler implements ECScheduler {
+public class ECWaterfallScheduler implements ECScheduler {
     public static class ECBungeeTask implements ECTask {
         protected final @NotNull ScheduledTask handle;
 
@@ -23,13 +23,13 @@ public class ECBungeeScheduler implements ECScheduler {
         }
     }
 
-    protected final @NotNull ECBungeeServer server;
+    protected final @NotNull ECWaterfallServer server;
 
-    public ECBungeeScheduler(@NotNull ECBungeeServer server) {
+    public ECWaterfallScheduler(@NotNull ECWaterfallServer server) {
         this.server = server;
     }
 
-    public @NotNull ECBungeeServer getServer() {
+    public @NotNull ECWaterfallServer getServer() {
         return this.server;
     }
 

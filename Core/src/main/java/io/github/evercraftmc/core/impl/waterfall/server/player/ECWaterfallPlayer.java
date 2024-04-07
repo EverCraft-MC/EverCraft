@@ -1,25 +1,26 @@
-package io.github.evercraftmc.core.impl.spigot.server.player;
+package io.github.evercraftmc.core.impl.waterfall.server.player;
 
 import io.github.evercraftmc.core.ECPlayerData;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
-import io.github.evercraftmc.core.impl.spigot.util.ECSpigotComponentFormatter;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
+import io.github.evercraftmc.core.impl.waterfall.util.ECWaterfallComponentFormatter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.UUID;
-import org.bukkit.entity.Player;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ECSpigotPlayer implements ECPlayer {
-    protected final Player handle;
+public class ECWaterfallPlayer implements ECPlayer {
+    protected final ProxiedPlayer handle;
 
     protected final @NotNull UUID uuid;
     protected final @NotNull String name;
 
     protected @NotNull String displayName;
 
-    public ECSpigotPlayer(@NotNull ECPlayerData.Player data) {
+    public ECWaterfallPlayer(@NotNull ECPlayerData.Player data) {
         this.uuid = data.uuid;
         this.name = data.name;
 
@@ -28,7 +29,7 @@ public class ECSpigotPlayer implements ECPlayer {
         this.handle = null;
     }
 
-    public ECSpigotPlayer(@NotNull ECPlayerData.Player data, @NotNull Player handle) {
+    public ECWaterfallPlayer(@NotNull ECPlayerData.Player data, @NotNull ProxiedPlayer handle) {
         this.uuid = data.uuid;
         this.name = data.name;
 
@@ -37,7 +38,7 @@ public class ECSpigotPlayer implements ECPlayer {
         this.handle = handle;
     }
 
-    public Player getHandle() {
+    public ProxiedPlayer getHandle() {
         return this.handle;
     }
 
@@ -63,24 +64,25 @@ public class ECSpigotPlayer implements ECPlayer {
 
     @Override
     public @NotNull String getOnlineDisplayName() {
-        return ECSpigotComponentFormatter.componentToString(this.handle.displayName());
+        return this.handle.getDisplayName();
     }
 
     @Override
     public void setOnlineDisplayName(@NotNull String displayName) {
         this.setDisplayName(displayName);
 
-        this.handle.customName(ECSpigotComponentFormatter.stringToComponent(displayName));
-        this.handle.displayName(ECSpigotComponentFormatter.stringToComponent(displayName));
-        this.handle.playerListName(ECSpigotComponentFormatter.stringToComponent(displayName));
+        this.handle.setDisplayName(displayName);
     }
 
     @Override
     public @Nullable InetAddress getAddress() {
-        InetSocketAddress socketAddress = this.handle.getAddress();
+        SocketAddress socketAddress = this.handle.getPendingConnection().getSocketAddress();
+        if (socketAddress == null) {
+            return null;
+        }
 
-        if (socketAddress != null) {
-            return socketAddress.getAddress();
+        if (socketAddress instanceof InetSocketAddress address) {
+            return address.getAddress();
         } else {
             return null;
         }
@@ -88,12 +90,12 @@ public class ECSpigotPlayer implements ECPlayer {
 
     @Override
     public @Nullable InetSocketAddress getServerAddress() {
-        return this.handle.getVirtualHost();
+        return this.handle.getPendingConnection().getVirtualHost();
     }
 
     @Override
     public @Nullable String getServer() {
-        throw new UnsupportedOperationException("Server is backend");
+        return this.handle.getServer() != null ? this.handle.getServer().getInfo().getName().toLowerCase() : null;
     }
 
     @Override
@@ -103,11 +105,11 @@ public class ECSpigotPlayer implements ECPlayer {
 
     @Override
     public void sendMessage(@NotNull String message) {
-        this.handle.sendMessage(ECSpigotComponentFormatter.stringToComponent(message));
+        this.handle.sendMessage(ECWaterfallComponentFormatter.stringToComponent(message));
     }
 
     @Override
     public void kick(@NotNull String message) {
-        this.handle.kick(ECSpigotComponentFormatter.stringToComponent(message));
+        this.handle.disconnect(ECWaterfallComponentFormatter.stringToComponent(message));
     }
 }

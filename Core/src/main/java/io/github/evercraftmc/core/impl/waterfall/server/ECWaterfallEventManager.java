@@ -1,4 +1,4 @@
-package io.github.evercraftmc.core.impl.bungee.server;
+package io.github.evercraftmc.core.impl.waterfall.server;
 
 import io.github.evercraftmc.core.ECPlayerData;
 import io.github.evercraftmc.core.api.events.ECEvent;
@@ -14,9 +14,9 @@ import io.github.evercraftmc.core.api.events.proxy.player.PlayerServerConnectEve
 import io.github.evercraftmc.core.api.events.proxy.player.PlayerServerConnectedEvent;
 import io.github.evercraftmc.core.api.server.ECEventManager;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
-import io.github.evercraftmc.core.impl.bungee.server.player.ECBungeePlayer;
-import io.github.evercraftmc.core.impl.bungee.util.ECBungeeComponentFormatter;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
+import io.github.evercraftmc.core.impl.waterfall.server.player.ECWaterfallPlayer;
+import io.github.evercraftmc.core.impl.waterfall.util.ECWaterfallComponentFormatter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -31,9 +31,9 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
 import org.jetbrains.annotations.NotNull;
 
-public class ECBungeeEventManager implements ECEventManager {
+public class ECWaterfallEventManager implements ECEventManager {
     protected class BungeeListeners implements Listener {
-        protected final @NotNull ECBungeeEventManager parent = ECBungeeEventManager.this;
+        protected final @NotNull ECWaterfallEventManager parent = ECWaterfallEventManager.this;
 
         protected final @NotNull Map<InetAddress, Boolean> allowedIps = new HashMap<>();
 
@@ -69,22 +69,22 @@ public class ECBungeeEventManager implements ECEventManager {
                 parent.server.getPlugin().getPlayerData().players.put(uuid, new ECPlayerData.Player(UUID.fromString(uuid), event.getConnection().getName()));
             }
 
-            io.github.evercraftmc.core.api.events.player.PlayerLoginEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerLoginEvent(new ECBungeePlayer(parent.server.getPlugin().getPlayerData().players.get(uuid)));
+            io.github.evercraftmc.core.api.events.player.PlayerLoginEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerLoginEvent(new ECWaterfallPlayer(parent.server.getPlugin().getPlayerData().players.get(uuid)));
             parent.emit(newEvent);
 
             if (newEvent.isCancelled()) {
                 event.setCancelled(true);
-                event.setReason(ECBungeeComponentFormatter.stringToComponent(newEvent.getCancelReason()));
+                event.setReason(ECWaterfallComponentFormatter.stringToComponent(newEvent.getCancelReason()));
             }
         }
 
         @EventHandler
         public void onPlayerJoin(@NotNull PostLoginEvent event) {
-            PlayerJoinEvent newEvent = new PlayerJoinEvent(new ECBungeePlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), "");
+            PlayerJoinEvent newEvent = new PlayerJoinEvent(new ECWaterfallPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), "");
             parent.emit(newEvent);
 
             if (newEvent.isCancelled()) {
-                event.getPlayer().disconnect(ECBungeeComponentFormatter.stringToComponent(newEvent.getCancelReason()));
+                event.getPlayer().disconnect(ECWaterfallComponentFormatter.stringToComponent(newEvent.getCancelReason()));
             } else if (!newEvent.getJoinMessage().isEmpty()) {
                 parent.server.broadcastMessage(newEvent.getJoinMessage());
             }
@@ -92,7 +92,7 @@ public class ECBungeeEventManager implements ECEventManager {
 
         @EventHandler
         public void onPlayerLeave(@NotNull PlayerDisconnectEvent event) {
-            PlayerLeaveEvent newEvent = new PlayerLeaveEvent(new ECBungeePlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), "");
+            PlayerLeaveEvent newEvent = new PlayerLeaveEvent(new ECWaterfallPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), "");
             parent.emit(newEvent);
 
             if (!newEvent.getLeaveMessage().isEmpty()) {
@@ -103,24 +103,24 @@ public class ECBungeeEventManager implements ECEventManager {
         @EventHandler
         public void onPlayerServerConnect(@NotNull ServerConnectEvent event) {
             if (event.getReason() == ServerConnectEvent.Reason.JOIN_PROXY) {
-                PlayerProxyJoinEvent newEvent = new PlayerProxyJoinEvent(new ECBungeePlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), "", event.getTarget().getName());
+                PlayerProxyJoinEvent newEvent = new PlayerProxyJoinEvent(new ECWaterfallPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), "", event.getTarget().getName());
                 parent.emit(newEvent);
 
                 if (newEvent.isCancelled()) {
                     event.setCancelled(true);
 
-                    event.getPlayer().disconnect(ECBungeeComponentFormatter.stringToComponent(newEvent.getCancelReason()));
+                    event.getPlayer().disconnect(ECWaterfallComponentFormatter.stringToComponent(newEvent.getCancelReason()));
                 } else {
                     event.setTarget(parent.server.getHandle().getServerInfo(newEvent.getTargetServer()));
                 }
             } else {
-                PlayerServerConnectEvent newEvent = new PlayerServerConnectEvent(new ECBungeePlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), event.getTarget().getName());
+                PlayerServerConnectEvent newEvent = new PlayerServerConnectEvent(new ECWaterfallPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), event.getTarget().getName());
                 parent.emit(newEvent);
 
                 if (newEvent.isCancelled()) {
                     event.setCancelled(true);
 
-                    event.getPlayer().sendMessage(ECBungeeComponentFormatter.stringToComponent(newEvent.getCancelReason()));
+                    event.getPlayer().sendMessage(ECWaterfallComponentFormatter.stringToComponent(newEvent.getCancelReason()));
                 } else {
                     event.setTarget(parent.server.getHandle().getServerInfo(newEvent.getTargetServer()));
                 }
@@ -129,7 +129,7 @@ public class ECBungeeEventManager implements ECEventManager {
 
         @EventHandler
         public void onPlayerServerConnect(@NotNull ServerConnectedEvent event) {
-            PlayerServerConnectedEvent newEvent = new PlayerServerConnectedEvent(new ECBungeePlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), event.getServer().getInfo().getName(), "");
+            PlayerServerConnectedEvent newEvent = new PlayerServerConnectedEvent(new ECWaterfallPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), event.getServer().getInfo().getName(), "");
             parent.emit(newEvent);
 
             if (!newEvent.getConnectMessage().isEmpty()) {
@@ -145,7 +145,7 @@ public class ECBungeeEventManager implements ECEventManager {
                     players.put(player.getUniqueId(), player.getName());
                 }
             }
-            PlayerProxyPingEvent newEvent = new PlayerProxyPingEvent(ECBungeeComponentFormatter.componentToString(event.getResponse().getDescriptionComponent()), event.getResponse().getPlayers().getOnline(), event.getResponse().getPlayers().getMax(), players, event.getConnection().getSocketAddress() instanceof InetSocketAddress socketAddress ? socketAddress.getAddress() : null, event.getConnection().getVirtualHost());
+            PlayerProxyPingEvent newEvent = new PlayerProxyPingEvent(ECWaterfallComponentFormatter.componentToString(event.getResponse().getDescriptionComponent()), event.getResponse().getPlayers().getOnline(), event.getResponse().getPlayers().getMax(), players, event.getConnection().getSocketAddress() instanceof InetSocketAddress socketAddress ? socketAddress.getAddress() : null, event.getConnection().getVirtualHost());
             parent.emit(newEvent);
 
             String[] motd = newEvent.getMotd().split("\n");
@@ -155,7 +155,7 @@ public class ECBungeeEventManager implements ECEventManager {
                     motd[i] = padding + motd[i] + padding;
                 }
             }
-            event.getResponse().setDescriptionComponent(ECBungeeComponentFormatter.stringToComponent(String.join("\n", motd)));
+            event.getResponse().setDescriptionComponent(ECWaterfallComponentFormatter.stringToComponent(String.join("\n", motd)));
 
             List<ServerPing.PlayerInfo> newPlayers = new ArrayList<>();
             for (Map.Entry<UUID, String> entry : newEvent.getPlayers().entrySet()) {
@@ -172,10 +172,10 @@ public class ECBungeeEventManager implements ECEventManager {
                 return;
             }
 
-            ECBungeePlayer player = parent.server.getOnlinePlayer(event.getSender());
+            ECWaterfallPlayer player = parent.server.getOnlinePlayer(event.getSender());
 
             if (message.charAt(0) != '/') {
-                PlayerChatEvent newEvent = new PlayerChatEvent(new ECBungeePlayer(parent.server.getPlugin().getPlayerData().players.get(player.getUuid().toString()), player.getHandle()), message, PlayerChatEvent.MessageType.CHAT, new ArrayList<>());
+                PlayerChatEvent newEvent = new PlayerChatEvent(new ECWaterfallPlayer(parent.server.getPlugin().getPlayerData().players.get(player.getUuid().toString()), player.getHandle()), message, PlayerChatEvent.MessageType.CHAT, new ArrayList<>());
                 parent.emit(newEvent);
 
                 event.setCancelled(true);
@@ -194,7 +194,7 @@ public class ECBungeeEventManager implements ECEventManager {
                     }
                 }
             } else {
-                PlayerCommandEvent newEvent = new PlayerCommandEvent(new ECBungeePlayer(parent.server.getPlugin().getPlayerData().players.get(player.getUuid().toString()), player.getHandle()), message);
+                PlayerCommandEvent newEvent = new PlayerCommandEvent(new ECWaterfallPlayer(parent.server.getPlugin().getPlayerData().players.get(player.getUuid().toString()), player.getHandle()), message);
                 parent.emit(newEvent);
 
                 if (newEvent.isCancelled()) {
@@ -208,17 +208,17 @@ public class ECBungeeEventManager implements ECEventManager {
         }
     }
 
-    protected final @NotNull ECBungeeServer server;
+    protected final @NotNull ECWaterfallServer server;
 
     protected final @NotNull Map<Class<? extends ECEvent>, List<Map.Entry<ECListener, Method>>> listeners = new HashMap<>();
 
-    public ECBungeeEventManager(@NotNull ECBungeeServer server) {
+    public ECWaterfallEventManager(@NotNull ECWaterfallServer server) {
         this.server = server;
 
         this.server.getHandle().getPluginManager().registerListener((Plugin) this.server.getPlugin().getHandle(), new BungeeListeners());
     }
 
-    public @NotNull ECBungeeServer getServer() {
+    public @NotNull ECWaterfallServer getServer() {
         return this.server;
     }
 

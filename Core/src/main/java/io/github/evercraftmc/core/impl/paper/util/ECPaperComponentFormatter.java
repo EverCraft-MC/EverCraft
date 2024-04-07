@@ -1,4 +1,4 @@
-package io.github.evercraftmc.core.impl.spigot.util;
+package io.github.evercraftmc.core.impl.paper.util;
 
 import io.github.evercraftmc.core.ECPluginManager;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
@@ -10,12 +10,12 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.NotNull;
 
-public class ECSpigotComponentFormatter {
+public class ECPaperComponentFormatter {
     protected static final char COLOR_CHAR = ECTextFormatter.TO_COLOR_CHAR;
 
     protected static final @NotNull String ALL_CODES = "0123456789AaBbCcDdEeFfKkLlMmNnOoRr";
 
-    private ECSpigotComponentFormatter() {
+    private ECPaperComponentFormatter() {
     }
 
     public static @NotNull Component stringToComponent(@NotNull String string) {
@@ -156,10 +156,8 @@ public class ECSpigotComponentFormatter {
             string.append(String.format(key, args));
         }
 
-        if (component.children() != null) {
-            for (Component child : component.children()) {
-                string.append(componentToString(child));
-            }
+        for (Component child : component.children()) {
+            string.append(componentToString(child));
         }
 
         return string.toString();
