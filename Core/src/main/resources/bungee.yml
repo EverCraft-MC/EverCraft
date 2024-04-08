@@ -1,8 +1,0 @@
-main: io.github.evercraftmc.core.impl.waterfall.ECWaterfallPluginLoader
-
-name: "EverCraft"
-description: "The EverCraft plugin"
-version: "${version}"
-
-authors: [ "Kale-Ko" ]
-website: "https://github.com/EverCraftMC/EverCraft"

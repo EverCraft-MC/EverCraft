@@ -4,8 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 public enum ECEnvironment {
     PAPER(ECEnvironmentType.BACKEND),
-    VELOCITY(ECEnvironmentType.PROXY),
-    WATERFALL(ECEnvironmentType.PROXY);
+    VELOCITY(ECEnvironmentType.PROXY);
 
     final @NotNull ECEnvironmentType type;
 
