@@ -6,9 +6,9 @@ public enum ECEnvironment {
     PAPER(ECEnvironmentType.BACKEND),
     VELOCITY(ECEnvironmentType.PROXY);
 
-    final @NotNull ECEnvironmentType type;
+    private final @NotNull ECEnvironmentType type;
 
-    ECEnvironment(@NotNull ECEnvironmentType type) {
+    private ECEnvironment(@NotNull ECEnvironmentType type) {
         this.type = type;
     }
 

@@ -3,6 +3,7 @@ package io.github.evercraftmc.core.impl.paper;
 import io.github.evercraftmc.core.ECPlugin;
 import io.github.evercraftmc.core.impl.ECEnvironment;
 import io.github.evercraftmc.core.impl.paper.server.ECPaperServer;
+import java.io.File;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ECPaperPluginLoader extends JavaPlugin {
@@ -10,7 +11,7 @@ public class ECPaperPluginLoader extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        this.plugin = new ECPlugin(this, this.getFile(), this.getServer().getPluginsFolder().toPath().resolve("EverCraft").toFile(), ECEnvironment.PAPER, this.getSLF4JLogger(), this.getClassLoader());
+        this.plugin = new ECPlugin(this, new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile()), this.getDataFolder(), ECEnvironment.VELOCITY, this.getSLF4JLogger(), this.getClass().getClassLoader());
     }
 
     @Override

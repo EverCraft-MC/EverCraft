@@ -1,7 +1,6 @@
-package io.github.evercraftmc.core.impl.paper.util;
+package io.github.evercraftmc.core.impl.util;
 
 import io.github.evercraftmc.core.ECPluginManager;
-import io.github.evercraftmc.core.impl.util.ECTextFormatter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
@@ -10,12 +9,12 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.NotNull;
 
-public class ECPaperComponentFormatter {
+public class ECComponentFormatter {
     protected static final char COLOR_CHAR = ECTextFormatter.TO_COLOR_CHAR;
 
     protected static final @NotNull String ALL_CODES = "0123456789AaBbCcDdEeFfKkLlMmNnOoRr";
 
-    private ECPaperComponentFormatter() {
+    private ECComponentFormatter() {
     }
 
     public static @NotNull Component stringToComponent(@NotNull String string) {

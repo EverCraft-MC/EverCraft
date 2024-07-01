@@ -7,7 +7,7 @@ import io.github.evercraftmc.core.api.events.messaging.MessageEvent;
 import io.github.evercraftmc.core.api.server.ECCommandManager;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
 import io.github.evercraftmc.core.impl.ECEnvironmentType;
-import io.github.evercraftmc.core.impl.paper.util.ECPaperComponentFormatter;
+import io.github.evercraftmc.core.impl.util.ECComponentFormatter;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
 import io.github.evercraftmc.core.messaging.ECMessage;
 import io.github.evercraftmc.core.messaging.ECMessageType;
@@ -42,16 +42,16 @@ public class ECPaperCommandManager implements ECCommandManager {
 
         @Override
         public boolean execute(@NotNull CommandSender sender, @NotNull String label, @NotNull String @NotNull [] args) {
-            if (sender instanceof Player spigotPlayer) {
+            if (sender instanceof Player paperPlayer) {
                 if (this.getPermission() == null || sender.hasPermission(this.getPermission()) || sender.isOp()) {
-                    this.command.run(parent.server.getOnlinePlayer(spigotPlayer.getUniqueId()), Arrays.asList(args), true);
+                    this.command.run(parent.server.getOnlinePlayer(paperPlayer.getUniqueId()), Arrays.asList(args), true);
 
                     if (this.forwardToOther) {
                         try {
                             ByteArrayOutputStream commandMessageData = new ByteArrayOutputStream();
                             DataOutputStream commandMessage = new DataOutputStream(commandMessageData);
                             commandMessage.writeInt(ECMessageType.GLOBAL_COMMAND);
-                            commandMessage.writeUTF(spigotPlayer.getUniqueId().toString());
+                            commandMessage.writeUTF(paperPlayer.getUniqueId().toString());
                             commandMessage.writeUTF(this.getName());
                             commandMessage.writeInt(args.length);
                             for (String arg : args) {
@@ -65,7 +65,7 @@ public class ECPaperCommandManager implements ECCommandManager {
                         }
                     }
                 } else {
-                    sender.sendMessage(ECPaperComponentFormatter.stringToComponent(ECTextFormatter.translateColors("&cYou do not have permission to run that command")));
+                    sender.sendMessage(ECComponentFormatter.stringToComponent(ECTextFormatter.translateColors("&cYou do not have permission to run that command")));
                 }
             } else {
                 this.command.run(parent.server.getConsole(), Arrays.asList(args), true);
@@ -76,9 +76,9 @@ public class ECPaperCommandManager implements ECCommandManager {
 
         @Override
         public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
-            if (sender instanceof Player spigotPlayer) {
+            if (sender instanceof Player paperPlayer) {
                 if (this.getPermission() == null || sender.hasPermission(this.getPermission()) || sender.isOp()) {
-                    return this.command.tabComplete(parent.server.getOnlinePlayer(spigotPlayer.getUniqueId()), Arrays.asList(args));
+                    return this.command.tabComplete(parent.server.getOnlinePlayer(paperPlayer.getUniqueId()), Arrays.asList(args));
                 } else {
                     return List.of();
                 }

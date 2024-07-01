@@ -42,7 +42,7 @@ build {
 processResources {
     inputs.property "version", core_version
 
-    filesMatching(["waterfall.yml", "plugin.yml"]) {
+    filesMatching(["paper-plugin.yml", "velocity-plugin.json"]) {
         expand "version": core_version
     }
 }

@@ -9,7 +9,7 @@ import io.github.evercraftmc.core.api.events.player.PlayerCommandEvent;
 import io.github.evercraftmc.core.api.server.ECEventManager;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
 import io.github.evercraftmc.core.impl.paper.server.player.ECPaperPlayer;
-import io.github.evercraftmc.core.impl.paper.util.ECPaperComponentFormatter;
+import io.github.evercraftmc.core.impl.util.ECComponentFormatter;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import java.lang.reflect.Method;
@@ -24,7 +24,7 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 public class ECPaperEventManager implements ECEventManager {
-    protected class SpigotListeners implements Listener {
+    protected class PaperListener implements Listener {
         protected final @NotNull ECPaperEventManager parent = ECPaperEventManager.this;
 
         @EventHandler
@@ -38,20 +38,20 @@ public class ECPaperEventManager implements ECEventManager {
 
             if (newEvent.isCancelled()) {
                 event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
-                event.getPlayer().kick(ECPaperComponentFormatter.stringToComponent(newEvent.getCancelReason()));
+                event.getPlayer().kick(ECComponentFormatter.stringToComponent(newEvent.getCancelReason()));
             }
         }
 
         @EventHandler
         public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
             Component ogMessage = event.joinMessage();
-            io.github.evercraftmc.core.api.events.player.PlayerJoinEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerJoinEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), ogMessage != null ? ECPaperComponentFormatter.componentToString(ogMessage) : "");
+            io.github.evercraftmc.core.api.events.player.PlayerJoinEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerJoinEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), ogMessage != null ? ECComponentFormatter.componentToString(ogMessage) : "");
             parent.emit(newEvent);
 
             event.joinMessage(Component.empty());
 
             if (newEvent.isCancelled()) {
-                event.getPlayer().kick(ECPaperComponentFormatter.stringToComponent(newEvent.getCancelReason()));
+                event.getPlayer().kick(ECComponentFormatter.stringToComponent(newEvent.getCancelReason()));
             } else if (!newEvent.getJoinMessage().isEmpty()) {
                 parent.server.broadcastMessage(newEvent.getJoinMessage());
             }
@@ -60,7 +60,7 @@ public class ECPaperEventManager implements ECEventManager {
         @EventHandler
         public void onPlayerLeave(@NotNull PlayerQuitEvent event) {
             Component ogMessage = event.quitMessage();
-            io.github.evercraftmc.core.api.events.player.PlayerLeaveEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerLeaveEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), ogMessage != null ? ECPaperComponentFormatter.componentToString(ogMessage) : "");
+            io.github.evercraftmc.core.api.events.player.PlayerLeaveEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerLeaveEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), ogMessage != null ? ECComponentFormatter.componentToString(ogMessage) : "");
             parent.emit(newEvent);
 
             event.quitMessage(Component.empty());
@@ -72,7 +72,7 @@ public class ECPaperEventManager implements ECEventManager {
 
         @EventHandler
         public void onPlayerChat(@NotNull AsyncChatEvent event) {
-            String message = ECPaperComponentFormatter.componentToString(event.message());
+            String message = ECComponentFormatter.componentToString(event.message());
             if (message.isEmpty()) {
                 event.setCancelled(true);
                 return;
@@ -125,7 +125,7 @@ public class ECPaperEventManager implements ECEventManager {
             if (component == null) {
                 return;
             }
-            String message = ECPaperComponentFormatter.componentToString(component);
+            String message = ECComponentFormatter.componentToString(component);
 
             ECPaperPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
 
@@ -151,7 +151,7 @@ public class ECPaperEventManager implements ECEventManager {
             if (component == null || event.getAdvancement().getDisplay() == null || !event.getAdvancement().getDisplay().doesAnnounceToChat() || Boolean.FALSE.equals(event.getPlayer().getWorld().getGameRuleValue(GameRule.ANNOUNCE_ADVANCEMENTS))) {
                 return;
             }
-            String message = ECPaperComponentFormatter.componentToString(component);
+            String message = ECComponentFormatter.componentToString(component);
 
             ECPaperPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
 
@@ -179,7 +179,7 @@ public class ECPaperEventManager implements ECEventManager {
     public ECPaperEventManager(@NotNull ECPaperServer server) {
         this.server = server;
 
-        this.server.getHandle().getPluginManager().registerEvents(new SpigotListeners(), (Plugin) this.server.getPlugin().getHandle());
+        this.server.getHandle().getPluginManager().registerEvents(new PaperListener(), (Plugin) this.server.getPlugin().getHandle());
     }
 
     public @NotNull ECPaperServer getServer() {
@@ -203,8 +203,8 @@ public class ECPaperEventManager implements ECEventManager {
     @SuppressWarnings("unchecked")
     @Override
     public @NotNull ECListener register(@NotNull ECListener listener) {
-        if (listener instanceof org.bukkit.event.Listener spigotListener) {
-            this.server.getHandle().getPluginManager().registerEvents(spigotListener, (Plugin) this.server.getPlugin().getHandle());
+        if (listener instanceof org.bukkit.event.Listener paperListener) {
+            this.server.getHandle().getPluginManager().registerEvents(paperListener, (Plugin) this.server.getPlugin().getHandle());
         }
 
         for (Method method : listener.getClass().getDeclaredMethods()) {

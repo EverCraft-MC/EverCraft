@@ -6,29 +6,21 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface ECCommand {
-    @NotNull
-    String getName();
+    public @NotNull String getName();
 
-    @NotNull
-    List<String> getAlias();
+    public @NotNull List<String> getAlias();
 
-    @NotNull
-    String getDescription();
+    public @NotNull String getDescription();
 
-    @NotNull
-    String getUsage();
+    public @NotNull String getUsage();
 
-    @NotNull
-    String getUsage(@NotNull ECPlayer player);
+    public @NotNull String getUsage(@NotNull ECPlayer player);
 
-    @Nullable
-    String getPermission();
+    public @Nullable String getPermission();
 
-    @NotNull
-    List<String> getExtraPermissions();
+    public @NotNull List<String> getExtraPermissions();
 
-    boolean run(@NotNull ECPlayer player, @NotNull List<String> args, boolean sendFeedback);
+    public boolean run(@NotNull ECPlayer player, @NotNull List<String> args, boolean sendFeedback);
 
-    @NotNull
-    List<String> tabComplete(@NotNull ECPlayer player, @NotNull List<String> args);
+    public @NotNull List<String> tabComplete(@NotNull ECPlayer player, @NotNull List<String> args);
 }

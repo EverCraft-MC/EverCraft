@@ -7,27 +7,27 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface ECPlayer {
-    @NotNull UUID getUuid();
+    public @NotNull UUID getUuid();
 
-    @NotNull String getName();
+    public @NotNull String getName();
 
-    @NotNull String getDisplayName();
+    public @NotNull String getDisplayName();
 
-    void setDisplayName(@NotNull String displayName);
+    public void setDisplayName(@NotNull String displayName);
 
-    @NotNull String getOnlineDisplayName();
+    public @NotNull String getOnlineDisplayName();
 
-    void setOnlineDisplayName(@NotNull String displayName);
+    public void setOnlineDisplayName(@NotNull String displayName);
 
-    @Nullable InetAddress getAddress();
+    public @Nullable InetAddress getAddress();
 
-    @Nullable InetSocketAddress getServerAddress();
+    public @Nullable InetSocketAddress getServerAddress();
 
-    @Nullable String getServer();
+    public @Nullable String getServer();
 
-    boolean hasPermission(@NotNull String permission);
+    public boolean hasPermission(@NotNull String permission);
 
-    void sendMessage(@NotNull String message);
+    public void sendMessage(@NotNull String message);
 
-    void kick(@NotNull String message);
+    public void kick(@NotNull String message);
 }

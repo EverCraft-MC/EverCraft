@@ -100,9 +100,9 @@ public class ECPaperServer implements ECServer {
     public @NotNull Collection<ECPaperPlayer> getOnlinePlayers() {
         ArrayList<ECPaperPlayer> players = new ArrayList<>();
 
-        for (Player spigotPlayer : this.handle.getOnlinePlayers()) {
-            if (this.plugin.getPlayerData().players.containsKey(spigotPlayer.getUniqueId().toString())) {
-                players.add(new ECPaperPlayer(this.plugin.getPlayerData().players.get(spigotPlayer.getUniqueId().toString()), spigotPlayer));
+        for (Player paperPlayer : this.handle.getOnlinePlayers()) {
+            if (this.plugin.getPlayerData().players.containsKey(paperPlayer.getUniqueId().toString())) {
+                players.add(new ECPaperPlayer(this.plugin.getPlayerData().players.get(paperPlayer.getUniqueId().toString()), paperPlayer));
             }
         }
 
@@ -111,9 +111,9 @@ public class ECPaperServer implements ECServer {
 
     @Override
     public ECPaperPlayer getOnlinePlayer(@NotNull UUID uuid) {
-        Player spigotPlayer = this.handle.getPlayer(uuid);
-        if (spigotPlayer != null && this.plugin.getPlayerData().players.containsKey(uuid.toString())) {
-            return new ECPaperPlayer(this.plugin.getPlayerData().players.get(uuid.toString()), spigotPlayer);
+        Player paperPlayer = this.handle.getPlayer(uuid);
+        if (paperPlayer != null && this.plugin.getPlayerData().players.containsKey(uuid.toString())) {
+            return new ECPaperPlayer(this.plugin.getPlayerData().players.get(uuid.toString()), paperPlayer);
         }
 
         return null;
@@ -121,11 +121,11 @@ public class ECPaperServer implements ECServer {
 
     @Override
     public ECPaperPlayer getOnlinePlayer(@NotNull String name) {
-        Player spigotPlayer = this.handle.getPlayer(name);
-        if (spigotPlayer != null) {
+        Player paperPlayer = this.handle.getPlayer(name);
+        if (paperPlayer != null) {
             for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) {
                 if (player.name.equalsIgnoreCase(name)) {
-                    return new ECPaperPlayer(player, spigotPlayer);
+                    return new ECPaperPlayer(player, paperPlayer);
                 }
             }
         }

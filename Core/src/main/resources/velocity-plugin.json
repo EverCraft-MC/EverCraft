@@ -1,0 +1,12 @@
+{
+  "main": "io.github.evercraftmc.core.impl.velocity.ECVelocityPluginLoader",
+  "id": "evercraft",
+  "name": "EverCraft",
+  "version": "${version}",
+  "description": "The EverCraft plugin",
+  "authors": [
+    "Kale-Ko"
+  ],
+  "url": "https://github.com/EverCraftMC/EverCraft",
+  "dependencies": [ ]
+}

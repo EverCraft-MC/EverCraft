@@ -1,7 +1,7 @@
 package io.github.evercraftmc.core.impl.paper.server.player;
 
 import io.github.evercraftmc.core.api.server.player.ECConsole;
-import io.github.evercraftmc.core.impl.paper.util.ECPaperComponentFormatter;
+import io.github.evercraftmc.core.impl.util.ECComponentFormatter;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,6 +23,6 @@ public class ECPaperConsole implements ECConsole {
 
     @Override
     public void sendMessage(@NotNull String message) {
-        this.handle.sendMessage(ECPaperComponentFormatter.stringToComponent(message));
+        this.handle.sendMessage(ECComponentFormatter.stringToComponent(message));
     }
 }

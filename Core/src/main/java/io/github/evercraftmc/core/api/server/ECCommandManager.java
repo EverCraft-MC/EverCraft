@@ -6,17 +6,17 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface ECCommandManager {
-    @NotNull List<ECCommand> getAll();
+    public @NotNull List<ECCommand> getAll();
 
-    @Nullable ECCommand get(@NotNull String name);
+    public @Nullable ECCommand get(@NotNull String name);
 
-    @NotNull ECCommand register(@NotNull ECCommand command);
+    public @NotNull ECCommand register(@NotNull ECCommand command);
 
-    @NotNull ECCommand register(@NotNull ECCommand command, boolean distinguishServer);
+    public @NotNull ECCommand register(@NotNull ECCommand command, boolean distinguishServer);
 
-    @NotNull ECCommand register(@NotNull ECCommand command, boolean distinguishServer, boolean forwardToOther);
+    public @NotNull ECCommand register(@NotNull ECCommand command, boolean distinguishServer, boolean forwardToOther);
 
-    @NotNull ECCommand unregister(@NotNull ECCommand command);
+    public @NotNull ECCommand unregister(@NotNull ECCommand command);
 
-    void unregisterAll();
+    public void unregisterAll();
 }

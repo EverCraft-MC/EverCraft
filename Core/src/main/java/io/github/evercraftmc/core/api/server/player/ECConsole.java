@@ -9,52 +9,52 @@ import org.jetbrains.annotations.Nullable;
 
 public interface ECConsole extends ECPlayer {
     @Override
-    default @NotNull UUID getUuid() {
+    public default @NotNull UUID getUuid() {
         return new UUID(0, 0);
     }
 
     @Override
-    default @NotNull String getName() {
+    public default @NotNull String getName() {
         return "Console";
     }
 
     @Override
-    default @NotNull String getDisplayName() {
+    public default @NotNull String getDisplayName() {
         return ECTextFormatter.translateColors("&l&4Console");
     }
 
     @Override
-    default void setDisplayName(@NotNull String displayName) {
+    public default void setDisplayName(@NotNull String displayName) {
         throw new UnsupportedOperationException("Player is console");
     }
 
     @Override
-    default @NotNull String getOnlineDisplayName() {
+    public default @NotNull String getOnlineDisplayName() {
         return ECTextFormatter.translateColors("&l&4Console");
     }
 
     @Override
-    default void setOnlineDisplayName(@NotNull String displayName) {
+    public default void setOnlineDisplayName(@NotNull String displayName) {
         throw new UnsupportedOperationException("Player is console");
     }
 
     @Override
-    default @Nullable InetAddress getAddress() {
+    public default @Nullable InetAddress getAddress() {
         return null;
     }
 
     @Override
-    default @Nullable InetSocketAddress getServerAddress() {
+    public default @Nullable InetSocketAddress getServerAddress() {
         return null;
     }
 
     @Override
-    default @Nullable String getServer() {
+    public default @Nullable String getServer() {
         throw new UnsupportedOperationException("Player is console");
     }
 
     @Override
-    default void kick(@NotNull String message) {
+    public default void kick(@NotNull String message) {
         throw new UnsupportedOperationException("Player is console");
     }
 }

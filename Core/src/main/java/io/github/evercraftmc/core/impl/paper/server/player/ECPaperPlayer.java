@@ -2,7 +2,7 @@ package io.github.evercraftmc.core.impl.paper.server.player;
 
 import io.github.evercraftmc.core.ECPlayerData;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
-import io.github.evercraftmc.core.impl.paper.util.ECPaperComponentFormatter;
+import io.github.evercraftmc.core.impl.util.ECComponentFormatter;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -63,16 +63,16 @@ public class ECPaperPlayer implements ECPlayer {
 
     @Override
     public @NotNull String getOnlineDisplayName() {
-        return ECPaperComponentFormatter.componentToString(this.handle.displayName());
+        return ECComponentFormatter.componentToString(this.handle.displayName());
     }
 
     @Override
     public void setOnlineDisplayName(@NotNull String displayName) {
         this.setDisplayName(displayName);
 
-        this.handle.customName(ECPaperComponentFormatter.stringToComponent(displayName));
-        this.handle.displayName(ECPaperComponentFormatter.stringToComponent(displayName));
-        this.handle.playerListName(ECPaperComponentFormatter.stringToComponent(displayName));
+        this.handle.customName(ECComponentFormatter.stringToComponent(displayName));
+        this.handle.displayName(ECComponentFormatter.stringToComponent(displayName));
+        this.handle.playerListName(ECComponentFormatter.stringToComponent(displayName));
     }
 
     @Override
@@ -103,11 +103,11 @@ public class ECPaperPlayer implements ECPlayer {
 
     @Override
     public void sendMessage(@NotNull String message) {
-        this.handle.sendMessage(ECPaperComponentFormatter.stringToComponent(message));
+        this.handle.sendMessage(ECComponentFormatter.stringToComponent(message));
     }
 
     @Override
     public void kick(@NotNull String message) {
-        this.handle.kick(ECPaperComponentFormatter.stringToComponent(message));
+        this.handle.kick(ECComponentFormatter.stringToComponent(message));
     }
 }

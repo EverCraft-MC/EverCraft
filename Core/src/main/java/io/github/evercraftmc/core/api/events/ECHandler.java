@@ -9,5 +9,5 @@ import org.jetbrains.annotations.NotNull;
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ECHandler {
-    @NotNull ECHandlerOrder order() default ECHandlerOrder.DONTCARE;
+    public @NotNull ECHandlerOrder order() default ECHandlerOrder.DONTCARE;
 }

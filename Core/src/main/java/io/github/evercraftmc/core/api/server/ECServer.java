@@ -10,50 +10,39 @@ import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 
 public interface ECServer {
-    @NotNull
-    ECPlugin getPlugin();
+    public @NotNull ECPlugin getPlugin();
 
-    @NotNull
-    String getMinecraftVersion();
+    public @NotNull String getMinecraftVersion();
 
-    @NotNull
-    String getSoftwareVersion();
+    public @NotNull String getSoftwareVersion();
 
-    @NotNull
-    ECEnvironment getEnvironment();
+    public @NotNull ECEnvironment getEnvironment();
 
-    @NotNull
-    ECEnvironmentType getEnvironmentType();
+    public @NotNull ECEnvironmentType getEnvironmentType();
 
-    @NotNull
-    Collection<? extends ECPlayer> getPlayers();
+    public @NotNull Collection<? extends ECPlayer> getPlayers();
 
-    ECPlayer getPlayer(@NotNull UUID uuid);
+    public ECPlayer getPlayer(@NotNull UUID uuid);
 
-    ECPlayer getPlayer(@NotNull String name);
+    public ECPlayer getPlayer(@NotNull String name);
 
-    @NotNull
-    Collection<? extends ECPlayer> getOnlinePlayers();
+    public @NotNull Collection<? extends ECPlayer> getOnlinePlayers();
 
-    ECPlayer getOnlinePlayer(@NotNull UUID uuid);
+    public ECPlayer getOnlinePlayer(@NotNull UUID uuid);
 
-    ECPlayer getOnlinePlayer(@NotNull String name);
+    public ECPlayer getOnlinePlayer(@NotNull String name);
 
-    @NotNull
-    ECConsole getConsole();
+    public @NotNull ECConsole getConsole();
 
-    default void broadcastMessage(@NotNull String message) {
+    public default void broadcastMessage(@NotNull String message) {
         for (ECPlayer player : this.getOnlinePlayers()) {
             player.sendMessage(message);
         }
     }
 
-    @NotNull
-    ECCommandManager getCommandManager();
+    public @NotNull ECCommandManager getCommandManager();
 
-    @NotNull
-    ECEventManager getEventManager();
+    public @NotNull ECEventManager getEventManager();
 
-    @NotNull
-    ECScheduler getScheduler();
+    public @NotNull ECScheduler getScheduler();
 }

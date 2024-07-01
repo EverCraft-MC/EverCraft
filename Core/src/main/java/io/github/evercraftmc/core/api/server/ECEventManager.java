@@ -5,11 +5,11 @@ import io.github.evercraftmc.core.api.events.ECListener;
 import org.jetbrains.annotations.NotNull;
 
 public interface ECEventManager {
-    void emit(@NotNull ECEvent event);
+    public void emit(@NotNull ECEvent event);
 
-    @NotNull ECListener register(@NotNull ECListener listener);
+    public @NotNull ECListener register(@NotNull ECListener listener);
 
-    @NotNull ECListener unregister(@NotNull ECListener listener);
+    public @NotNull ECListener unregister(@NotNull ECListener listener);
 
-    void unregisterAll();
+    public void unregisterAll();
 }
