@@ -1,5 +1,6 @@
 package io.github.evercraftmc.core.impl.velocity.server;
 
+import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import io.github.evercraftmc.core.ECPlayerData;
@@ -44,12 +45,12 @@ public class ECVelocityServer implements ECProxyServer {
 
     @Override
     public @NotNull String getMinecraftVersion() {
-        return ""; // TODO
+        return ProtocolVersion.MAXIMUM_VERSION.getMostRecentSupportedVersion();
     }
 
     @Override
     public @NotNull String getAllMinecraftVersions() {
-        return ""; // TODO;
+        return "1.8-" + this.getMinecraftVersion();
     }
 
     @Override
