@@ -17,6 +17,7 @@ import java.util.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.GameRule;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
@@ -228,6 +229,10 @@ public class ECPaperEventManager implements ECEventManager {
             if (method.getParameterCount() == 1 && ECEvent.class.isAssignableFrom(method.getParameterTypes()[0]) && method.getDeclaredAnnotationsByType(ECHandler.class).length > 0 && this.listeners.containsKey((Class<? extends ECEvent>) method.getParameterTypes()[0])) {
                 this.listeners.get((Class<? extends ECEvent>) method.getParameterTypes()[0]).remove(new AbstractMap.SimpleEntry<>(listener, method));
             }
+        }
+
+        if (listener instanceof org.bukkit.event.Listener paperListener) {
+            HandlerList.unregisterAll(paperListener);
         }
 
         return listener;
