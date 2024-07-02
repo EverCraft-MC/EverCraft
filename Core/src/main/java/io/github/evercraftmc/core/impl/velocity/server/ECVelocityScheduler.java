@@ -6,7 +6,7 @@ import io.github.evercraftmc.core.api.server.ECScheduler;
 import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 
-public class ECVelocityScheduler implements ECScheduler { // TODO Check if tasks are run synchronously or asynchronously
+public class ECVelocityScheduler implements ECScheduler {
     public static class ECVelocityTask implements ECTask {
         protected final @NotNull ScheduledTask handle;
 
@@ -39,27 +39,12 @@ public class ECVelocityScheduler implements ECScheduler { // TODO Check if tasks
     }
 
     @Override
-    public @NotNull ECVelocityScheduler.ECVelocityTask runTaskAsync(@NotNull Runnable task) {
-        return new ECVelocityScheduler.ECVelocityTask(this.server.getHandle().getScheduler().buildTask(this.server.getPlugin().getHandle(), task).schedule());
-    }
-
-    @Override
     public @NotNull ECVelocityScheduler.ECVelocityTask runTaskLater(@NotNull Runnable task, int ticks) {
         return new ECVelocityScheduler.ECVelocityTask(this.server.getHandle().getScheduler().buildTask(this.server.getPlugin().getHandle(), task).delay(ticks * 50L, TimeUnit.MILLISECONDS).schedule());
     }
 
     @Override
-    public @NotNull ECVelocityScheduler.ECVelocityTask runTaskLaterAsync(@NotNull Runnable task, int ticks) {
-        return new ECVelocityScheduler.ECVelocityTask(this.server.getHandle().getScheduler().buildTask(this.server.getPlugin().getHandle(), task).delay(ticks * 50L, TimeUnit.MILLISECONDS).schedule());
-    }
-
-    @Override
     public @NotNull ECVelocityScheduler.ECVelocityTask runTaskRepeat(@NotNull Runnable task, int delay, int ticks) {
-        return new ECVelocityScheduler.ECVelocityTask(this.server.getHandle().getScheduler().buildTask(this.server.getPlugin().getHandle(), task).delay(delay * 50L, TimeUnit.MILLISECONDS).delay(ticks * 50L, TimeUnit.MILLISECONDS).schedule());
-    }
-
-    @Override
-    public @NotNull ECVelocityScheduler.ECVelocityTask runTaskRepeatAsync(@NotNull Runnable task, int delay, int ticks) {
         return new ECVelocityScheduler.ECVelocityTask(this.server.getHandle().getScheduler().buildTask(this.server.getPlugin().getHandle(), task).delay(delay * 50L, TimeUnit.MILLISECONDS).delay(ticks * 50L, TimeUnit.MILLISECONDS).schedule());
     }
 }

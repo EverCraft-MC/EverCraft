@@ -259,7 +259,7 @@ public class ECVelocityEventManager implements ECEventManager {
     @SuppressWarnings("unchecked")
     @Override
     public @NotNull ECListener register(@NotNull ECListener listener) {
-        this.server.getHandle().getEventManager().register(this.server.getPlugin().getHandle(), listener); // TODO Make sure this doesn't error out with no methods
+        this.server.getHandle().getEventManager().register(this.server.getPlugin().getHandle(), listener);
 
         for (Method method : listener.getClass().getDeclaredMethods()) {
             if (method.isAnnotationPresent(ECHandler.class) && method.getParameterCount() == 1 && ECEvent.class.isAssignableFrom(method.getParameterTypes()[0])) {
@@ -283,6 +283,8 @@ public class ECVelocityEventManager implements ECEventManager {
                 this.listeners.get((Class<? extends ECEvent>) method.getParameterTypes()[0]).remove(new AbstractMap.SimpleEntry<>(listener, method));
             }
         }
+
+        this.server.getHandle().getEventManager().unregisterListener(this.server.getPlugin().getHandle(), listener);
 
         return listener;
     }

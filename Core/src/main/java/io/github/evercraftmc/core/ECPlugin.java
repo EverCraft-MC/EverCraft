@@ -137,7 +137,7 @@ public class ECPlugin {
 
             this.data.load(false);
 
-            this.server.getScheduler().runTaskRepeatAsync(this::loadData, 120 * 20, 120 * 20);
+            this.server.getScheduler().runTaskRepeat(this::loadData, 120 * 20, 120 * 20);
 
             this.logger.info("Loaded plugin data");
         } catch (Exception e) {
