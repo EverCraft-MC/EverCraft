@@ -11,13 +11,14 @@
 - Tablist
 - /friend
 - Playtime
+- Player data commands
 
-## Bungee
+## Velocity
 
 - Server warps
 - Fallback server
 
-## Spigot
+## Paper
 
 - Warps
 - Kits

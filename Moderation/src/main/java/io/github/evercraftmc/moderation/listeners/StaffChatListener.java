@@ -20,7 +20,7 @@ public class StaffChatListener implements ECListener {
 
     @ECHandler(order=ECHandlerOrder.AFTER)
     public void onPlayerChat(@NotNull PlayerChatEvent event) {
-        if (event.getType() == PlayerChatEvent.MessageType.CHAT && parent.getPlugin().getPlayerData().players.get(event.getPlayer().getUuid().toString()).staffchat && event.getPlayer().hasPermission("evercraft.moderation.commands.staffChat")) {
+        if (event.getType() == PlayerChatEvent.MessageType.CHAT && parent.getPlugin().getPlayerData().players.get(event.getPlayer().getUuid().toString()).staffChat && event.getPlayer().hasPermission("evercraft.moderation.commands.staffChat")) {
             event.setCancelled(true);
 
             List<ECPlayer> recipients = new ArrayList<>();

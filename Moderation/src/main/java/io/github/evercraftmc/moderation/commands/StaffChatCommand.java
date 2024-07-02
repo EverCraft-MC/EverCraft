@@ -54,14 +54,14 @@ public class StaffChatCommand implements ECCommand {
     @Override
     public boolean run(@NotNull ECPlayer player, @NotNull List<String> args, boolean sendFeedback) {
         if (args.size() == 0) {
-            parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).staffchat = !parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).staffchat;
+            parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).staffChat = !parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).staffChat;
             parent.getPlugin().saveData();
         } else {
             if (args.get(0).equalsIgnoreCase("on") || args.get(0).equalsIgnoreCase("true")) {
-                parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).staffchat = true;
+                parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).staffChat = true;
                 parent.getPlugin().saveData();
             } else if (args.get(0).equalsIgnoreCase("off") || args.get(0).equalsIgnoreCase("false")) {
-                parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).staffchat = false;
+                parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).staffChat = false;
                 parent.getPlugin().saveData();
             } else {
                 if (sendFeedback) {
@@ -97,7 +97,7 @@ public class StaffChatCommand implements ECCommand {
         }
 
         if (sendFeedback) {
-            if (parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).staffchat) {
+            if (parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).staffChat) {
                 player.sendMessage(ECTextFormatter.translateColors("&aTurned staffchat on"));
             } else {
                 player.sendMessage(ECTextFormatter.translateColors("&aTurned staffchat off"));
