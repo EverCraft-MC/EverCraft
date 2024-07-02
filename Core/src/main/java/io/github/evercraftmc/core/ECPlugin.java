@@ -123,6 +123,8 @@ public class ECPlugin {
         }
 
         try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
             StructuredYamlFileConfig<MySQLDetails> mySqlDetails = new StructuredYamlFileConfig<>(MySQLDetails.class, dataDirectory.toPath().resolve("mysql.yml").toFile(), new YamlParser.Builder().build());
             mySqlDetails.load(true);
 
@@ -217,7 +219,7 @@ public class ECPlugin {
             return false;
         }
 
-        if (moduleInfo.getEnvironment() != null && !(moduleInfo.getEnvironment().equalsIgnoreCase(this.getEnvironment().toString()) || moduleInfo.getEnvironment().equalsIgnoreCase(this.getEnvironment().getType().toString()))) {
+        if (moduleInfo.getEnvironment() != null && !(moduleInfo.getEnvironment().trim().equalsIgnoreCase(this.getEnvironment().toString()) || moduleInfo.getEnvironment().trim().equalsIgnoreCase(this.getEnvironment().getType().toString()))) {
             this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Module is in incorrect environment");
 
             this.loadedMap.put(moduleInfo.getName().toLowerCase(), false);

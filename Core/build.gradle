@@ -20,6 +20,8 @@ dependencies {
     compileOnly "io.papermc.paper:paper-api:${paper_version}"
     compileOnly "com.velocitypowered:velocity-api:${velocity_version}"
 
+    implementation "com.mysql:mysql-connector-j:${mysql_version}"
+
     compileOnly "org.slf4j:slf4j-api:2.0.9"
 }
 
