@@ -40,7 +40,13 @@ public class ECVelocityCommandManager implements ECCommandManager {
 
             if (sender instanceof Player velocityPlayer) {
                 if (this.command.getPermission() == null || sender.hasPermission(this.command.getPermission())) {
-                    this.command.run(parent.server.getOnlinePlayer(velocityPlayer.getUniqueId()), Arrays.asList(args), true);
+                    try {
+                        this.command.run(parent.server.getOnlinePlayer(velocityPlayer.getUniqueId()), Arrays.asList(args), true);
+                    } catch (Exception e) {
+                        parent.getServer().getPlugin().getLogger().error("Error while running command {}.", invocation.alias(), e);
+
+                        return;
+                    }
 
                     if (this.forwardToOther) {
                         try {
@@ -55,7 +61,7 @@ public class ECVelocityCommandManager implements ECCommandManager {
                             }
                             commandMessage.close();
 
-                            parent.server.getPlugin().getMessenger().send(ECRecipient.fromEnvironmentType(ECEnvironmentType.PROXY), commandMessageData.toByteArray());
+                            parent.server.getPlugin().getMessenger().send(ECRecipient.fromEnvironmentType(ECEnvironmentType.BACKEND), commandMessageData.toByteArray());
                         } catch (IOException e) {
                             parent.server.getPlugin().getLogger().error("[Messenger] Failed to send message", e);
                         }
@@ -75,12 +81,24 @@ public class ECVelocityCommandManager implements ECCommandManager {
 
             if (sender instanceof Player velocityPlayer) {
                 if (this.command.getPermission() == null || sender.hasPermission(this.command.getPermission())) {
-                    return this.command.tabComplete(parent.server.getOnlinePlayer(velocityPlayer.getUniqueId()), Arrays.asList(args));
+                    try {
+                        return this.command.tabComplete(parent.server.getOnlinePlayer(velocityPlayer.getUniqueId()), Arrays.asList(args));
+                    } catch (Exception e) {
+                        parent.getServer().getPlugin().getLogger().error("Error while tab-completing command {}.", invocation.alias(), e);
+
+                        return List.of();
+                    }
                 } else {
                     return List.of();
                 }
             } else {
-                return this.command.tabComplete(parent.server.getConsole(), Arrays.asList(args));
+                try {
+                    return this.command.tabComplete(parent.server.getConsole(), Arrays.asList(args));
+                } catch (Exception e) {
+                    parent.getServer().getPlugin().getLogger().error("Error while tab-completing command {}.", invocation.alias(), e);
+
+                    return List.of();
+                }
             }
         }
 
@@ -93,11 +111,8 @@ public class ECVelocityCommandManager implements ECCommandManager {
         private static @NotNull List<String> alias(@NotNull String uName, @NotNull List<String> uAliases, boolean distinguishServer) {
             ArrayList<String> aliases = new ArrayList<>();
 
-            aliases.add("evercraft:" + (distinguishServer ? "p" : "") + uName.toLowerCase());
-
             for (String alias : uAliases) {
                 aliases.add((distinguishServer ? "p" : "") + alias.toLowerCase());
-                aliases.add("evercraft:" + (distinguishServer ? "p" : "") + alias.toLowerCase());
             }
 
             return aliases;
@@ -138,7 +153,11 @@ public class ECVelocityCommandManager implements ECCommandManager {
                             if (player != null) {
                                 ECCommand ecCommand = parent.server.getCommandManager().get(command);
                                 if (ecCommand != null) {
-                                    ecCommand.run(player, args, false);
+                                    try {
+                                        ecCommand.run(player, args, false);
+                                    } catch (Exception e) {
+                                        parent.getServer().getPlugin().getLogger().error("Error while running command {}.", command, e);
+                                    }
                                 }
                             }
                         }

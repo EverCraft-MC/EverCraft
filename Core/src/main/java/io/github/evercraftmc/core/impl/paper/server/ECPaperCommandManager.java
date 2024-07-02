@@ -44,7 +44,13 @@ public class ECPaperCommandManager implements ECCommandManager {
         public boolean execute(@NotNull CommandSender sender, @NotNull String label, @NotNull String @NotNull [] args) {
             if (sender instanceof Player paperPlayer) {
                 if (this.getPermission() == null || sender.hasPermission(this.getPermission()) || sender.isOp()) {
-                    this.command.run(parent.server.getOnlinePlayer(paperPlayer.getUniqueId()), Arrays.asList(args), true);
+                    try {
+                        this.command.run(parent.server.getOnlinePlayer(paperPlayer.getUniqueId()), Arrays.asList(args), true);
+                    } catch (Exception e) {
+                        parent.getServer().getPlugin().getLogger().error("Error while running command {}.", label, e);
+
+                        return false;
+                    }
 
                     if (this.forwardToOther) {
                         try {
@@ -78,12 +84,24 @@ public class ECPaperCommandManager implements ECCommandManager {
         public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
             if (sender instanceof Player paperPlayer) {
                 if (this.getPermission() == null || sender.hasPermission(this.getPermission()) || sender.isOp()) {
-                    return this.command.tabComplete(parent.server.getOnlinePlayer(paperPlayer.getUniqueId()), Arrays.asList(args));
+                    try {
+                        return this.command.tabComplete(parent.server.getOnlinePlayer(paperPlayer.getUniqueId()), Arrays.asList(args));
+                    } catch (Exception e) {
+                        parent.getServer().getPlugin().getLogger().error("Error while tab-completing command {}.", label, e);
+
+                        return List.of();
+                    }
                 } else {
                     return List.of();
                 }
             } else {
-                return this.command.tabComplete(parent.server.getConsole(), Arrays.asList(args));
+                try {
+                    return this.command.tabComplete(parent.server.getConsole(), Arrays.asList(args));
+                } catch (Exception e) {
+                    parent.getServer().getPlugin().getLogger().error("Error while tab-completing command {}.", label, e);
+
+                    return List.of();
+                }
             }
         }
 
@@ -140,7 +158,11 @@ public class ECPaperCommandManager implements ECCommandManager {
                             if (player != null) {
                                 ECCommand ecCommand = parent.server.getCommandManager().get(command);
                                 if (ecCommand != null) {
-                                    ecCommand.run(player, args, false);
+                                    try {
+                                        ecCommand.run(player, args, false);
+                                    } catch (Exception e) {
+                                        parent.getServer().getPlugin().getLogger().error("Error while running command {}.", command, e);
+                                    }
                                 }
                             }
                         }

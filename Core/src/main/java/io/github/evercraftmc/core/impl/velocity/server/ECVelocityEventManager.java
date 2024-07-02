@@ -250,7 +250,7 @@ public class ECVelocityEventManager implements ECEventManager {
                     entry.getValue().setAccessible(true);
                     entry.getValue().invoke(entry.getKey(), event);
                 } catch (Exception e) {
-                    this.server.getPlugin().getLogger().error("Failed to emit event", e);
+                    this.getServer().getPlugin().getLogger().error("Error while invoking event handler {}.", entry.getValue(), e);
                 }
             }
         }
