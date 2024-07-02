@@ -3,6 +3,7 @@ package io.github.evercraftmc.global;
 import io.github.evercraftmc.core.api.ECModule;
 import io.github.evercraftmc.core.api.commands.ECCommand;
 import io.github.evercraftmc.core.api.events.ECListener;
+import io.github.evercraftmc.core.impl.ECEnvironmentType;
 import io.github.evercraftmc.global.commands.*;
 import io.github.evercraftmc.global.listeners.ChatListener;
 import io.github.evercraftmc.global.listeners.JoinListener;
@@ -29,8 +30,11 @@ public class GlobalModule extends ECModule {
 
         this.listeners.add(this.plugin.getServer().getEventManager().register(new JoinListener(this)));
         this.listeners.add(this.plugin.getServer().getEventManager().register(new ChatListener(this)));
-        this.listeners.add(this.plugin.getServer().getEventManager().register(new ServerChoiceListener(this)));
-        this.listeners.add(this.plugin.getServer().getEventManager().register(new ServerPingListener(this)));
+
+        if (this.plugin.getEnvironment().getType() == ECEnvironmentType.PROXY) {
+            this.listeners.add(this.plugin.getServer().getEventManager().register(new ServerChoiceListener(this)));
+            this.listeners.add(this.plugin.getServer().getEventManager().register(new ServerPingListener(this)));
+        }
     }
 
     public void unload() {

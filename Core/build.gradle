@@ -17,10 +17,8 @@ repositories {
 dependencies {
     implementation "io.github.kale_ko:ejcl:${ejcl_version}"
 
-    compileOnly("io.papermc.paper:paper-api:${paper_version}") {
-        exclude group: "net.md-5", module: "bungeecord-chat"
-    }
-    compileOnly("com.velocitypowered:velocity-api:${velocity_version}")
+    compileOnly "io.papermc.paper:paper-api:${paper_version}"
+    compileOnly "com.velocitypowered:velocity-api:${velocity_version}"
 
     compileOnly "org.slf4j:slf4j-api:2.0.9"
 }
