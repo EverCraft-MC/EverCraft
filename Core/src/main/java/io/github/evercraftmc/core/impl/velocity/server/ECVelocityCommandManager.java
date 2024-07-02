@@ -1,5 +1,9 @@
-package io.github.evercraftmc.core.impl.paper.server;
+package io.github.evercraftmc.core.impl.velocity.server;
 
+import com.velocitypowered.api.command.CommandMeta;
+import com.velocitypowered.api.command.CommandSource;
+import com.velocitypowered.api.command.SimpleCommand;
+import com.velocitypowered.api.proxy.Player;
 import io.github.evercraftmc.core.api.commands.ECCommand;
 import io.github.evercraftmc.core.api.events.ECHandler;
 import io.github.evercraftmc.core.api.events.ECListener;
@@ -14,45 +18,37 @@ import io.github.evercraftmc.core.messaging.ECMessageType;
 import io.github.evercraftmc.core.messaging.ECRecipient;
 import java.io.*;
 import java.util.*;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.permissions.Permission;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ECPaperCommandManager implements ECCommandManager {
-    protected class CommandInter extends Command {
-        protected final @NotNull ECPaperCommandManager parent = ECPaperCommandManager.this;
+public class ECVelocityCommandManager implements ECCommandManager {
+    protected class CommandInter implements SimpleCommand {
+        protected final @NotNull ECVelocityCommandManager parent = ECVelocityCommandManager.this;
 
         protected final @NotNull ECCommand command;
         protected final boolean forwardToOther;
 
-        public CommandInter(@NotNull ECCommand command, boolean distinguishServer, boolean forwardToOther) {
-            super((distinguishServer ? "b" : "") + command.getName().toLowerCase());
-
-            this.setName((distinguishServer ? "b" : "") + command.getName().toLowerCase());
-            this.setDescription(command.getDescription());
-            this.setAliases(CommandInter.alias(command.getName(), command.getAlias(), distinguishServer));
-            this.setPermission(command.getPermission() != null ? command.getPermission().toLowerCase() : null);
-
+        public CommandInter(@NotNull ECCommand command, boolean forwardToOther) {
             this.command = command;
             this.forwardToOther = forwardToOther;
         }
 
         @Override
-        public boolean execute(@NotNull CommandSender sender, @NotNull String label, @NotNull String @NotNull [] args) {
-            if (sender instanceof Player paperPlayer) {
-                if (this.getPermission() == null || sender.hasPermission(this.getPermission()) || sender.isOp()) {
-                    this.command.run(parent.server.getOnlinePlayer(paperPlayer.getUniqueId()), Arrays.asList(args), true);
+        public void execute(@NotNull Invocation invocation) {
+            CommandSource sender = invocation.source();
+            String[] args = invocation.arguments();
+
+            if (sender instanceof Player velocityPlayer) {
+                if (this.command.getPermission() == null || sender.hasPermission(this.command.getPermission())) {
+                    this.command.run(parent.server.getOnlinePlayer(velocityPlayer.getUniqueId()), Arrays.asList(args), true);
 
                     if (this.forwardToOther) {
                         try {
                             ByteArrayOutputStream commandMessageData = new ByteArrayOutputStream();
                             DataOutputStream commandMessage = new DataOutputStream(commandMessageData);
                             commandMessage.writeInt(ECMessageType.GLOBAL_COMMAND);
-                            commandMessage.writeUTF(paperPlayer.getUniqueId().toString());
-                            commandMessage.writeUTF(this.getName());
+                            commandMessage.writeUTF(velocityPlayer.getUniqueId().toString());
+                            commandMessage.writeUTF(this.command.getName());
                             commandMessage.writeInt(args.length);
                             for (String arg : args) {
                                 commandMessage.writeUTF(arg);
@@ -70,15 +66,16 @@ public class ECPaperCommandManager implements ECCommandManager {
             } else {
                 this.command.run(parent.server.getConsole(), Arrays.asList(args), true);
             }
-
-            return true;
         }
 
         @Override
-        public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
-            if (sender instanceof Player paperPlayer) {
-                if (this.getPermission() == null || sender.hasPermission(this.getPermission()) || sender.isOp()) {
-                    return this.command.tabComplete(parent.server.getOnlinePlayer(paperPlayer.getUniqueId()), Arrays.asList(args));
+        public List<String> suggest(@NotNull Invocation invocation) {
+            CommandSource sender = invocation.source();
+            String[] args = invocation.arguments();
+
+            if (sender instanceof Player velocityPlayer) {
+                if (this.command.getPermission() == null || sender.hasPermission(this.command.getPermission())) {
+                    return this.command.tabComplete(parent.server.getOnlinePlayer(velocityPlayer.getUniqueId()), Arrays.asList(args));
                 } else {
                     return List.of();
                 }
@@ -88,34 +85,35 @@ public class ECPaperCommandManager implements ECCommandManager {
         }
 
         @Override
-        public boolean testPermissionSilent(@NotNull CommandSender sender) {
-            return this.getPermission() == null || sender.hasPermission(this.getPermission());
+        public boolean hasPermission(@NotNull Invocation invocation) {
+            CommandSource sender = invocation.source();
+            return this.command.getPermission() == null || sender.hasPermission(this.command.getPermission());
         }
 
         private static @NotNull List<String> alias(@NotNull String uName, @NotNull List<String> uAliases, boolean distinguishServer) {
             ArrayList<String> aliases = new ArrayList<>();
 
-            aliases.add("evercraft:" + (distinguishServer ? "b" : "") + uName.toLowerCase());
+            aliases.add("evercraft:" + (distinguishServer ? "p" : "") + uName.toLowerCase());
 
             for (String alias : uAliases) {
-                aliases.add((distinguishServer ? "b" : "") + alias.toLowerCase());
-                aliases.add("evercraft:" + (distinguishServer ? "b" : "") + alias.toLowerCase());
+                aliases.add((distinguishServer ? "p" : "") + alias.toLowerCase());
+                aliases.add("evercraft:" + (distinguishServer ? "p" : "") + alias.toLowerCase());
             }
 
             return aliases;
         }
     }
 
-    protected final @NotNull ECPaperServer server;
+    protected final @NotNull ECVelocityServer server;
 
     protected final @NotNull Map<String, ECCommand> commands = new HashMap<>();
     protected final @NotNull Map<String, CommandInter> interCommands = new HashMap<>();
 
-    public ECPaperCommandManager(@NotNull ECPaperServer server) {
+    public ECVelocityCommandManager(@NotNull ECVelocityServer server) {
         this.server = server;
 
         this.server.getEventManager().register(new ECListener() {
-            private final ECPaperCommandManager parent = ECPaperCommandManager.this;
+            private final ECVelocityCommandManager parent = ECVelocityCommandManager.this;
 
             @ECHandler
             public void onMessage(@NotNull MessageEvent event) {
@@ -154,7 +152,7 @@ public class ECPaperCommandManager implements ECCommandManager {
         });
     }
 
-    public @NotNull ECPaperServer getServer() {
+    public @NotNull ECVelocityServer getServer() {
         return this.server;
     }
 
@@ -181,19 +179,23 @@ public class ECPaperCommandManager implements ECCommandManager {
     @Override
     public @NotNull ECCommand register(@NotNull ECCommand command, boolean distinguishServer, boolean forwardToOther) {
         if (!this.commands.containsKey(command.getName().toLowerCase())) {
-            CommandInter interCommand = new CommandInter(command, distinguishServer, forwardToOther);
+            CommandInter interCommand = new CommandInter(command, forwardToOther);
 
             this.commands.put(command.getName().toLowerCase(), command);
             this.interCommands.put(command.getName().toLowerCase(), interCommand);
 
-            this.server.getHandle().getCommandMap().register("evercraft", interCommand);
-            this.interCommands.get(command.getName().toLowerCase()).register(this.server.getHandle().getCommandMap());
+            CommandMeta.Builder commandMeta = this.server.getHandle().getCommandManager().metaBuilder((distinguishServer ? "p" : "") + command.getName().toLowerCase());
+            commandMeta = commandMeta.aliases(CommandInter.alias(command.getName(), command.getAlias(), distinguishServer).toArray(new String[] { }));
+            commandMeta = commandMeta.plugin(this.server.getPlugin().getHandle());
+            // TODO       this.setDescription(command.getDescription());
 
-            for (String permission : command.getExtraPermissions()) {
-                if (this.server.getHandle().getPluginManager().getPermission(permission) == null) {
-                    this.server.getHandle().getPluginManager().addPermission(new Permission(permission));
-                }
-            }
+            this.server.getHandle().getCommandManager().register(commandMeta.build(), interCommand);
+
+            // TODO       for (String permission : command.getExtraPermissions()) {
+            //                if (this.server.getHandle().getPluginManager().getPermission(permission) == null) {
+            //                    this.server.getHandle().getPluginManager().addPermission(new Permission(permission));
+            //                }
+            //            }
 
             return command;
         } else {
@@ -204,7 +206,7 @@ public class ECPaperCommandManager implements ECCommandManager {
     @Override
     public @NotNull ECCommand unregister(@NotNull ECCommand command) {
         if (this.commands.containsKey(command.getName().toLowerCase())) {
-            this.interCommands.get(command.getName().toLowerCase()).unregister(this.server.getHandle().getCommandMap());
+            this.server.getHandle().getCommandManager().unregister(command.getName().toLowerCase());
 
             this.commands.remove(command.getName().toLowerCase());
             this.interCommands.remove(command.getName().toLowerCase());

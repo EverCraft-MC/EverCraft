@@ -27,7 +27,7 @@ public class ECVelocityPluginLoader {
         this.dataDirectory = dataDirectory;
         this.logger = logger;
 
-        this.plugin = new ECPlugin(this, new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile()), dataDirectory.toFile(), ECEnvironment.VELOCITY, this.logger, this.getClass().getClassLoader());
+        this.plugin = new ECPlugin(this, new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile()), this.getDataDirectory().getParent().resolve("EverCraft").toFile(), ECEnvironment.VELOCITY, this.logger, this.getClass().getClassLoader());
     }
 
     @Subscribe
