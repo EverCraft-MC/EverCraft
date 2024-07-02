@@ -36,14 +36,16 @@ public class ECVelocityCommandManager implements ECCommandManager {
         @Override
         public void execute(@NotNull Invocation invocation) {
             CommandSource sender = invocation.source();
-            String[] args = invocation.arguments();
+            String label = invocation.alias();
+            List<String> args = new ArrayList<>(Arrays.asList(invocation.arguments()));
+            args.add(0, label);
 
             if (sender instanceof Player velocityPlayer) {
                 if (this.command.getPermission() == null || sender.hasPermission(this.command.getPermission())) {
                     try {
-                        this.command.run(parent.server.getOnlinePlayer(velocityPlayer.getUniqueId()), Arrays.asList(args), true);
+                        this.command.run(parent.server.getOnlinePlayer(velocityPlayer.getUniqueId()), args, true);
                     } catch (Exception e) {
-                        parent.getServer().getPlugin().getLogger().error("Error while running command {}.", invocation.alias(), e);
+                        parent.getServer().getPlugin().getLogger().error("Error while running command {}.", label, e);
 
                         return;
                     }
@@ -55,7 +57,7 @@ public class ECVelocityCommandManager implements ECCommandManager {
                             commandMessage.writeInt(ECMessageType.GLOBAL_COMMAND);
                             commandMessage.writeUTF(velocityPlayer.getUniqueId().toString());
                             commandMessage.writeUTF(this.command.getName());
-                            commandMessage.writeInt(args.length);
+                            commandMessage.writeInt(args.size());
                             for (String arg : args) {
                                 commandMessage.writeUTF(arg);
                             }
@@ -70,21 +72,23 @@ public class ECVelocityCommandManager implements ECCommandManager {
                     sender.sendMessage(ECComponentFormatter.stringToComponent(ECTextFormatter.translateColors("&cYou do not have permission to run that command")));
                 }
             } else {
-                this.command.run(parent.server.getConsole(), Arrays.asList(args), true);
+                this.command.run(parent.server.getConsole(), args, true);
             }
         }
 
         @Override
         public List<String> suggest(@NotNull Invocation invocation) {
             CommandSource sender = invocation.source();
-            String[] args = invocation.arguments();
+            String label = invocation.alias();
+            List<String> args = new ArrayList<>(Arrays.asList(invocation.arguments()));
+            args.add(0, label);
 
             if (sender instanceof Player velocityPlayer) {
                 if (this.command.getPermission() == null || sender.hasPermission(this.command.getPermission())) {
                     try {
-                        return this.command.tabComplete(parent.server.getOnlinePlayer(velocityPlayer.getUniqueId()), Arrays.asList(args));
+                        return this.command.tabComplete(parent.server.getOnlinePlayer(velocityPlayer.getUniqueId()), args);
                     } catch (Exception e) {
-                        parent.getServer().getPlugin().getLogger().error("Error while tab-completing command {}.", invocation.alias(), e);
+                        parent.getServer().getPlugin().getLogger().error("Error while tab-completing command {}.", label, e);
 
                         return List.of();
                     }
@@ -93,9 +97,9 @@ public class ECVelocityCommandManager implements ECCommandManager {
                 }
             } else {
                 try {
-                    return this.command.tabComplete(parent.server.getConsole(), Arrays.asList(args));
+                    return this.command.tabComplete(parent.server.getConsole(), args);
                 } catch (Exception e) {
-                    parent.getServer().getPlugin().getLogger().error("Error while tab-completing command {}.", invocation.alias(), e);
+                    parent.getServer().getPlugin().getLogger().error("Error while tab-completing command {}.", label, e);
 
                     return List.of();
                 }
