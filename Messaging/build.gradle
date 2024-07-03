@@ -13,13 +13,16 @@ repositories {
 
 dependencies {
     implementation "io.github.kale_ko:ejcl:${ejcl_version}"
+
+    implementation "io.netty:netty-all:${netty_version}"
+    implementation "org.slf4j:slf4j-api:${slf4j_version}"
 }
 
 tasks.register("fatJar", Jar) {
     archiveClassifier = "fat"
 
     manifest {
-        attributes "Main-Class": "io.github.evercraftmc.messaging.ECMessagingMain"
+        attributes "Main-Class": "io.github.evercraftmc.messaging.server.ECMessagingServerMain"
     }
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
