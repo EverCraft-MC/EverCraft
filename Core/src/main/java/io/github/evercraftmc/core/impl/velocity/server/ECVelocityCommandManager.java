@@ -38,7 +38,6 @@ public class ECVelocityCommandManager implements ECCommandManager {
             CommandSource sender = invocation.source();
             String label = invocation.alias();
             List<String> args = new ArrayList<>(Arrays.asList(invocation.arguments()));
-            args.add(0, label);
 
             if (sender instanceof Player velocityPlayer) {
                 if (this.command.getPermission() == null || sender.hasPermission(this.command.getPermission())) {
