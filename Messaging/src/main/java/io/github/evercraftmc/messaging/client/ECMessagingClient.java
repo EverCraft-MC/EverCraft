@@ -1,13 +1,12 @@
-package io.github.evercraftmc.messaging.server;
+package io.github.evercraftmc.messaging.client;
 
-import io.github.evercraftmc.messaging.server.netty.ECMessagingServerHandler;
-import io.netty.bootstrap.ServerBootstrap;
+import io.github.evercraftmc.messaging.client.netty.ECMessagingClientHandler;
+import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
 import java.net.InetSocketAddress;
@@ -15,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
-public class ECMessagingServer {
+public class ECMessagingClient {
     protected final @NotNull Logger logger;
 
     protected final @NotNull InetSocketAddress address;
@@ -25,9 +24,8 @@ public class ECMessagingServer {
 
     protected Thread thread;
     protected EventLoopGroup serverWorker;
-    protected EventLoopGroup connectionWorker;
 
-    public ECMessagingServer(@NotNull Logger logger, @NotNull InetSocketAddress address) {
+    public ECMessagingClient(@NotNull Logger logger, @NotNull InetSocketAddress address) {
         this.logger = logger;
 
         this.address = address;
@@ -52,8 +50,6 @@ public class ECMessagingServer {
             }
             this.running = true;
 
-            this.logger.info("Starting Messaging server on port {}", this.address.getPort());
-
             this.thread = new Thread(this::run, this.getClass().getSimpleName() + "[address=" + this.address + "]");
             this.thread.setDaemon(true);
             this.thread.start();
@@ -67,58 +63,43 @@ public class ECMessagingServer {
             }
             this.running = false;
 
-            this.logger.info("Stopping Messaging server");
-
             Future<?> serverFuture = null;
-            Future<?> connectionFuture = null;
             if (this.serverWorker != null) {
-                serverFuture = this.serverWorker.shutdownGracefully(500, 5000, TimeUnit.MILLISECONDS);
+                serverFuture = this.serverWorker.shutdownGracefully(500, 3000, TimeUnit.MILLISECONDS);
             }
-            if (this.connectionWorker != null) {
-                connectionFuture = this.connectionWorker.shutdownGracefully(500, 5000, TimeUnit.MILLISECONDS);
-            }
-
             if (serverFuture != null) {
                 serverFuture.syncUninterruptibly();
-            }
-            if (connectionFuture != null) {
-                connectionFuture.syncUninterruptibly();
             }
         }
     }
 
     protected void run() {
         try {
-            ServerBootstrap bootstrap = new ServerBootstrap();
+            Bootstrap bootstrap = new Bootstrap();
 
-            this.serverWorker = new NioEventLoopGroup(8);
-            this.connectionWorker = new NioEventLoopGroup(512);
+            this.serverWorker = new NioEventLoopGroup(4);
 
-            bootstrap.channel(NioServerSocketChannel.class).group(this.serverWorker, this.connectionWorker);
+            bootstrap.channel(NioSocketChannel.class).group(this.serverWorker);
 
-            bootstrap.childHandler(new ChannelInitializer<NioSocketChannel>() {
+            bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
                 @Override
                 public void initChannel(NioSocketChannel channel) {
-                    channel.pipeline().addLast(new ECMessagingServerHandler(ECMessagingServer.this));
+                    channel.pipeline().addLast(new ECMessagingClientHandler(ECMessagingClient.this));
                 }
             });
 
-            bootstrap.childOption(ChannelOption.TCP_NODELAY, true).option(ChannelOption.SO_BACKLOG, 16).childOption(ChannelOption.SO_KEEPALIVE, true);
+            bootstrap.option(ChannelOption.TCP_NODELAY, true).option(ChannelOption.SO_KEEPALIVE, true);
             bootstrap.validate();
 
             {
-                Channel channel = bootstrap.bind(this.address).syncUninterruptibly().channel();
-
-                this.logger.info("Successfully started Messaging server");
+                Channel channel = bootstrap.connect(this.address).syncUninterruptibly().channel();
 
                 {
                     channel.closeFuture().syncUninterruptibly();
-
-                    this.logger.info("Successfully stopped Messaging server");
                 }
             }
         } catch (Exception e) {
-            this.logger.error("Exception in Messaging server", e);
+            this.logger.error("Exception in Messaging client", e);
 
             throw e;
         }
