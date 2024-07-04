@@ -4,6 +4,7 @@ import io.github.kale_ko.bjsl.parsers.YamlParser;
 import io.github.kale_ko.ejcl.file.bjsl.StructuredYamlFileConfig;
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
+import java.util.Scanner;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,16 +27,16 @@ public class ECMessagingServerMain {
             ECMessagingServer server = new ECMessagingServer(logger, new InetSocketAddress(messagingDetails.get().host, messagingDetails.get().port));
             server.start();
 
-            while (true) {
-                int read = System.in.read();
-                if (read == -1) {
-                    Thread.sleep(500);
-                    continue;
-                }
+            {
+                Scanner stdIn = new Scanner(System.in);
 
-                if (read == 'q') {
-                    server.stop();
-                    break;
+                while (true) {
+                    String read = stdIn.nextLine();
+
+                    if (read.equalsIgnoreCase("q") || read.equalsIgnoreCase("quit")) {
+                        server.stop();
+                        break;
+                    }
                 }
             }
         } catch (Exception e) {

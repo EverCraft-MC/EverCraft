@@ -1,11 +1,10 @@
 package io.github.evercraftmc.messaging.client;
 
 import io.github.evercraftmc.messaging.client.netty.ECMessagingClientHandler;
+import io.github.evercraftmc.messaging.common.ECMessage;
+import io.github.evercraftmc.messaging.common.ECMessageId;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
@@ -23,7 +22,8 @@ public class ECMessagingClient {
     protected boolean running = false;
 
     protected Thread thread;
-    protected EventLoopGroup serverWorker;
+    protected EventLoopGroup clientWorker;
+    protected Channel channel;
 
     public ECMessagingClient(@NotNull Logger logger, @NotNull InetSocketAddress address) {
         this.logger = logger;
@@ -48,7 +48,6 @@ public class ECMessagingClient {
             if (this.running) {
                 throw new RuntimeException(this.getClass().getSimpleName() + " is already running!");
             }
-            this.running = true;
 
             this.thread = new Thread(this::run, this.getClass().getSimpleName() + "[address=" + this.address + "]");
             this.thread.setDaemon(true);
@@ -59,49 +58,65 @@ public class ECMessagingClient {
     public void stop() {
         synchronized (this.statusLock) {
             if (!this.running) {
-                throw new RuntimeException(this.getClass().getSimpleName() + " is already running!");
+                throw new RuntimeException(this.getClass().getSimpleName() + " is not running!");
             }
             this.running = false;
 
-            Future<?> serverFuture = null;
-            if (this.serverWorker != null) {
-                serverFuture = this.serverWorker.shutdownGracefully(500, 3000, TimeUnit.MILLISECONDS);
+            Future<?> clientFuture = null;
+            if (this.clientWorker != null) {
+                clientFuture = this.clientWorker.shutdownGracefully(500, 3000, TimeUnit.MILLISECONDS);
             }
-            if (serverFuture != null) {
-                serverFuture.syncUninterruptibly();
+            if (clientFuture != null) {
+                clientFuture.syncUninterruptibly();
             }
         }
     }
 
     protected void run() {
         try {
-            Bootstrap bootstrap = new Bootstrap();
+            synchronized (this.statusLock) {
+                this.running = true;
 
-            this.serverWorker = new NioEventLoopGroup(4);
+                Bootstrap bootstrap = new Bootstrap();
 
-            bootstrap.channel(NioSocketChannel.class).group(this.serverWorker);
+                this.clientWorker = new NioEventLoopGroup(4);
 
-            bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
-                @Override
-                public void initChannel(NioSocketChannel channel) {
-                    channel.pipeline().addLast(new ECMessagingClientHandler(ECMessagingClient.this));
-                }
-            });
+                bootstrap.channel(NioSocketChannel.class).group(this.clientWorker);
 
-            bootstrap.option(ChannelOption.TCP_NODELAY, true).option(ChannelOption.SO_KEEPALIVE, true);
-            bootstrap.validate();
+                bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
+                    @Override
+                    public void initChannel(@NotNull NioSocketChannel channel) {
+                        channel.pipeline().addLast(new ECMessagingClientHandler(ECMessagingClient.this));
+                    }
+                });
+
+                bootstrap.option(ChannelOption.TCP_NODELAY, true).option(ChannelOption.SO_KEEPALIVE, true);
+                bootstrap.validate();
+
+                this.channel = bootstrap.connect(this.address).syncUninterruptibly().channel();
+            }
 
             {
-                Channel channel = bootstrap.connect(this.address).syncUninterruptibly().channel();
-
-                {
-                    channel.closeFuture().syncUninterruptibly();
-                }
+                this.channel.closeFuture().syncUninterruptibly();
             }
         } catch (Exception e) {
             this.logger.error("Exception in Messaging client", e);
 
             throw e;
         }
+    }
+
+    public void send(@NotNull ECMessage message) {
+        synchronized (this.statusLock) {
+            if (!this.running) {
+                throw new RuntimeException(this.getClass().getSimpleName() + " is not running!");
+            }
+        }
+
+        this.channel.writeAndFlush(message).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+    }
+
+    public void send(@NotNull ECMessageId from, @NotNull ECMessageId to, byte @NotNull [] data) {
+        this.send(new ECMessage(from, to, data));
     }
 }

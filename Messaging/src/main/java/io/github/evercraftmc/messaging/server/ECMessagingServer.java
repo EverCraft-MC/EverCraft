@@ -2,10 +2,10 @@ package io.github.evercraftmc.messaging.server;
 
 import io.github.evercraftmc.messaging.server.netty.ECMessagingServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.ServerChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -26,6 +26,7 @@ public class ECMessagingServer {
     protected Thread thread;
     protected EventLoopGroup serverWorker;
     protected EventLoopGroup connectionWorker;
+    protected ServerChannel channel;
 
     public ECMessagingServer(@NotNull Logger logger, @NotNull InetSocketAddress address) {
         this.logger = logger;
@@ -50,7 +51,6 @@ public class ECMessagingServer {
             if (this.running) {
                 throw new RuntimeException(this.getClass().getSimpleName() + " is already running!");
             }
-            this.running = true;
 
             this.logger.info("Starting Messaging server on port {}", this.address.getPort());
 
@@ -89,33 +89,37 @@ public class ECMessagingServer {
 
     protected void run() {
         try {
-            ServerBootstrap bootstrap = new ServerBootstrap();
+            synchronized (this.statusLock) {
+                this.running = true;
 
-            this.serverWorker = new NioEventLoopGroup(8);
-            this.connectionWorker = new NioEventLoopGroup(512);
+                ServerBootstrap bootstrap = new ServerBootstrap();
 
-            bootstrap.channel(NioServerSocketChannel.class).group(this.serverWorker, this.connectionWorker);
+                this.serverWorker = new NioEventLoopGroup(8);
+                this.connectionWorker = new NioEventLoopGroup(512);
 
-            bootstrap.childHandler(new ChannelInitializer<NioSocketChannel>() {
-                @Override
-                public void initChannel(NioSocketChannel channel) {
-                    channel.pipeline().addLast(new ECMessagingServerHandler(ECMessagingServer.this));
-                }
-            });
+                bootstrap.channel(NioServerSocketChannel.class).group(this.serverWorker, this.connectionWorker);
 
-            bootstrap.childOption(ChannelOption.TCP_NODELAY, true).option(ChannelOption.SO_BACKLOG, 16).childOption(ChannelOption.SO_KEEPALIVE, true);
-            bootstrap.validate();
+                bootstrap.childHandler(new ChannelInitializer<NioSocketChannel>() {
+                    @Override
+                    public void initChannel(NioSocketChannel channel) {
+                        channel.pipeline().addLast(new ECMessagingServerHandler(ECMessagingServer.this));
+                    }
+                });
 
-            {
-                Channel channel = bootstrap.bind(this.address).syncUninterruptibly().channel();
-
-                this.logger.info("Successfully started Messaging server");
+                bootstrap.childOption(ChannelOption.TCP_NODELAY, true).option(ChannelOption.SO_BACKLOG, 16).childOption(ChannelOption.SO_KEEPALIVE, true);
+                bootstrap.validate();
 
                 {
-                    channel.closeFuture().syncUninterruptibly();
+                    this.channel = (ServerChannel) bootstrap.bind(this.address).syncUninterruptibly().channel();
 
-                    this.logger.info("Successfully stopped Messaging server");
+                    this.logger.info("Successfully started Messaging server");
                 }
+            }
+
+            {
+                this.channel.closeFuture().syncUninterruptibly();
+
+                this.logger.info("Successfully stopped Messaging server");
             }
         } catch (Exception e) {
             this.logger.error("Exception in Messaging server", e);
