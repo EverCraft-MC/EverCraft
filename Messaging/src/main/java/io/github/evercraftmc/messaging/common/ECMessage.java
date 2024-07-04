@@ -4,13 +4,13 @@ import org.jetbrains.annotations.NotNull;
 
 public class ECMessage {
     public final @NotNull ECMessageId sender;
-    public final @NotNull ECMessageId receiver;
+    public final @NotNull ECMessageId recipient;
 
     public final byte @NotNull [] data;
 
-    public ECMessage(@NotNull ECMessageId sender, @NotNull ECMessageId receiver, byte @NotNull [] data) {
+    public ECMessage(@NotNull ECMessageId sender, @NotNull ECMessageId recipient, byte @NotNull [] data) {
         this.sender = sender;
-        this.receiver = receiver;
+        this.recipient = recipient;
 
         this.data = data;
     }
@@ -19,8 +19,8 @@ public class ECMessage {
         return this.sender;
     }
 
-    public @NotNull ECMessageId getReceiver() {
-        return this.receiver;
+    public @NotNull ECMessageId getRecipient() {
+        return this.recipient;
     }
 
     public byte @NotNull [] getData() {

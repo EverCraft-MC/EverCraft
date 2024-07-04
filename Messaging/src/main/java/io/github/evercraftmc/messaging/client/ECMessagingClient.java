@@ -72,6 +72,10 @@ public class ECMessagingClient {
         }
     }
 
+    public @NotNull Channel getChannel() {
+        return this.channel;
+    }
+
     protected void run() {
         try {
             synchronized (this.statusLock) {

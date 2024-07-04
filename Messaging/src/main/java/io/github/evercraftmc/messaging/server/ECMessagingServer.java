@@ -2,15 +2,13 @@ package io.github.evercraftmc.messaging.server;
 
 import io.github.evercraftmc.messaging.server.netty.ECMessagingServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.ServerChannel;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -27,6 +25,7 @@ public class ECMessagingServer {
     protected EventLoopGroup serverWorker;
     protected EventLoopGroup connectionWorker;
     protected ServerChannel channel;
+    protected List<Channel> channelGroup;
 
     public ECMessagingServer(@NotNull Logger logger, @NotNull InetSocketAddress address) {
         this.logger = logger;
@@ -100,9 +99,17 @@ public class ECMessagingServer {
                 bootstrap.channel(NioServerSocketChannel.class).group(this.serverWorker, this.connectionWorker);
 
                 bootstrap.childHandler(new ChannelInitializer<NioSocketChannel>() {
+                    private final @NotNull ECMessagingServer parent = ECMessagingServer.this;
+
                     @Override
                     public void initChannel(NioSocketChannel channel) {
                         channel.pipeline().addLast(new ECMessagingServerHandler(ECMessagingServer.this));
+
+                        parent.channelGroup.add(channel);
+
+                        channel.closeFuture().addListener((future) -> {
+                            parent.channelGroup.remove(channel);
+                        });
                     }
                 });
 
@@ -126,5 +133,21 @@ public class ECMessagingServer {
 
             throw e;
         }
+    }
+
+    public @NotNull EventLoopGroup getServerWorker() {
+        return this.serverWorker;
+    }
+
+    public @NotNull EventLoopGroup getConnectionWorker() {
+        return this.connectionWorker;
+    }
+
+    public @NotNull ServerChannel getChannel() {
+        return this.channel;
+    }
+
+    public @NotNull List<Channel> getChannelGroup() {
+        return this.channelGroup;
     }
 }
