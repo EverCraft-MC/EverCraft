@@ -81,32 +81,56 @@ public class ECMessagingClient {
             synchronized (this.statusLock) {
                 this.running = true;
 
-                Bootstrap bootstrap = new Bootstrap();
-
                 this.clientWorker = new NioEventLoopGroup(4);
 
-                bootstrap.channel(NioSocketChannel.class).group(this.clientWorker);
-
-                bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
-                    @Override
-                    public void initChannel(@NotNull NioSocketChannel channel) {
-                        channel.pipeline().addLast(new ECMessagingClientHandler(ECMessagingClient.this));
-                    }
-                });
-
-                bootstrap.option(ChannelOption.TCP_NODELAY, true).option(ChannelOption.SO_KEEPALIVE, true);
-                bootstrap.validate();
-
-                this.channel = bootstrap.connect(this.address).syncUninterruptibly().channel();
-            }
-
-            {
-                this.channel.closeFuture().syncUninterruptibly();
+                this.reconnect(0);
             }
         } catch (Exception e) {
             this.logger.error("Exception in Messaging client", e);
 
             throw e;
+        }
+    }
+
+    protected void reconnect(long delay) {
+        Runnable runnable = () -> {
+            Bootstrap bootstrap = new Bootstrap();
+
+            bootstrap.channel(NioSocketChannel.class).group(this.clientWorker);
+
+            bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
+                @Override
+                public void initChannel(@NotNull NioSocketChannel channel) {
+                    channel.pipeline().addLast(new ECMessagingClientHandler(ECMessagingClient.this));
+                }
+            });
+
+            bootstrap.option(ChannelOption.TCP_NODELAY, true).option(ChannelOption.SO_KEEPALIVE, true);
+            bootstrap.validate();
+
+            ChannelFuture channelFuture = bootstrap.connect(this.address);
+
+            channelFuture.addListener((future) -> {
+                this.channel = channelFuture.channel();
+
+                if (!future.isSuccess()) {
+                    this.reconnect(delay <= 0 ? 256 : delay * 3);
+                } else {
+                    this.logger.info("Connected to Messaging server");
+
+                    this.channel.closeFuture().addListener((closeFuture) -> {
+                        this.reconnect(256);
+                    });
+                }
+            });
+        };
+
+        if (delay > 0) {
+            this.logger.warn("Attempting reconnect in {}ms", delay);
+
+            this.clientWorker.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+        } else {
+            runnable.run();
         }
     }
 

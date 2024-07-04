@@ -92,12 +92,12 @@ public class ECMessagingServer {
             synchronized (this.statusLock) {
                 this.running = true;
 
-                ServerBootstrap bootstrap = new ServerBootstrap();
-
                 this.serverWorker = new NioEventLoopGroup(8);
-                this.connectionWorker = new NioEventLoopGroup(512);
+                this.connectionWorker = new NioEventLoopGroup(64);
 
                 this.channelGroup = new ArrayList<>();
+
+                ServerBootstrap bootstrap = new ServerBootstrap();
 
                 bootstrap.channel(NioServerSocketChannel.class).group(this.serverWorker, this.connectionWorker);
 

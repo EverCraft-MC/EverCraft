@@ -51,8 +51,6 @@ public class ECMessagingServerHandler extends ChannelDuplexHandler {
     public void write(@NotNull ChannelHandlerContext ctx, @NotNull Object msg, @NotNull ChannelPromise promise) {
         if (msg instanceof ByteBuf buffer) {
             ctx.write(buffer);
-
-            buffer.release();
         } else {
             throw new RuntimeException("Incorrect type passed to " + this.getClass().getSimpleName() + ", " + msg.getClass().getName());
         }
