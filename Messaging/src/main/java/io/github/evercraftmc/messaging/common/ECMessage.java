@@ -3,24 +3,24 @@ package io.github.evercraftmc.messaging.common;
 import org.jetbrains.annotations.NotNull;
 
 public class ECMessage {
-    public final @NotNull ECMessageId from;
-    public final @NotNull ECMessageId to;
+    public final @NotNull ECMessageId sender;
+    public final @NotNull ECMessageId receiver;
 
     public final byte @NotNull [] data;
 
-    public ECMessage(@NotNull ECMessageId from, @NotNull ECMessageId to, byte @NotNull [] data) {
-        this.from = from;
-        this.to = to;
+    public ECMessage(@NotNull ECMessageId sender, @NotNull ECMessageId receiver, byte @NotNull [] data) {
+        this.sender = sender;
+        this.receiver = receiver;
 
         this.data = data;
     }
 
-    public @NotNull ECMessageId getFrom() {
-        return this.from;
+    public @NotNull ECMessageId getSender() {
+        return this.sender;
     }
 
-    public @NotNull ECMessageId getTo() {
-        return this.to;
+    public @NotNull ECMessageId getReceiver() {
+        return this.receiver;
     }
 
     public byte @NotNull [] getData() {

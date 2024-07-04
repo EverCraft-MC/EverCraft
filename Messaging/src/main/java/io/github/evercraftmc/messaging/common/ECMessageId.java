@@ -26,6 +26,10 @@ public class ECMessageId {
         return this.value;
     }
 
+    public boolean matches(@NotNull Object match) {
+        return this.value.equals(match.toString());
+    }
+
     protected static final @NotNull Map<String, Function<String, ECMessageId>> parserMap = new HashMap<>();
 
     public static void addParser(@NotNull String type, @NotNull Function<String, ECMessageId> function) {
