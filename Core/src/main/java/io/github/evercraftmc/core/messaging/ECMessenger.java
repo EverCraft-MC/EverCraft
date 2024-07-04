@@ -37,6 +37,11 @@ public class ECMessenger {
     }
 
     public void start() {
+        ECAllMessageId.register();
+        ECUUIDMessageId.register();
+        ECEnvironmentMessageId.register();
+        ECEnvironmentTypeMessageId.register();
+
         this.client = new ECMessagingClient(parent.getLogger(), this.address);
         this.client.start();
     }

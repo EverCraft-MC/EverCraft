@@ -33,17 +33,17 @@ public class ECMessageId {
     protected static final @NotNull Map<String, Function<String, ECMessageId>> parserMap = new HashMap<>();
 
     public static void addParser(@NotNull String type, @NotNull Function<String, ECMessageId> function) {
-        parserMap.put(type, function);
+        parserMap.put(type.toLowerCase(), function);
     }
 
     public static void removeParser(@NotNull String type) {
-        parserMap.remove(type);
+        parserMap.remove(type.toLowerCase());
     }
 
     public static ECMessageId parse(@NotNull String type, @NotNull String value) {
-        if (parserMap.containsKey(type)) {
+        if (!parserMap.containsKey(type.toLowerCase())) {
             throw new RuntimeException("Unknown message id type \"" + type + "\"");
         }
-        return parserMap.get(type).apply(value);
+        return parserMap.get(type.toLowerCase()).apply(value);
     }
 }
