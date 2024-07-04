@@ -1,6 +1,7 @@
 package io.github.evercraftmc.moderation.commands;
 
 import io.github.evercraftmc.core.api.commands.ECCommand;
+import io.github.evercraftmc.core.api.server.player.ECConsole;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
 import io.github.evercraftmc.moderation.ModerationModule;
@@ -72,6 +73,9 @@ public class MaintenanceCommand implements ECCommand {
 
         if (sendFeedback) {
             if (parent.getPlugin().getPlayerData().maintenance) {
+                if (player instanceof ECConsole) {
+                    player.sendMessage(ECTextFormatter.translateColors("&aMaintenance mode has been enabled"));
+                }
                 parent.getPlugin().getServer().broadcastMessage(ECTextFormatter.translateColors("&aMaintenance mode has been enabled"));
 
                 for (ECPlayer player2 : parent.getPlugin().getServer().getOnlinePlayers()) {
@@ -80,6 +84,9 @@ public class MaintenanceCommand implements ECCommand {
                     }
                 }
             } else {
+                if (player instanceof ECConsole) {
+                    player.sendMessage(ECTextFormatter.translateColors("&aMaintenance mode has been disabled"));
+                }
                 parent.getPlugin().getServer().broadcastMessage(ECTextFormatter.translateColors("&aMaintenance mode has been disabled"));
             }
         }

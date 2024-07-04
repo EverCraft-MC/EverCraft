@@ -1,6 +1,7 @@
 package io.github.evercraftmc.moderation.commands;
 
 import io.github.evercraftmc.core.api.commands.ECCommand;
+import io.github.evercraftmc.core.api.server.player.ECConsole;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
 import io.github.evercraftmc.moderation.ModerationModule;
@@ -72,8 +73,14 @@ public class LockChatCommand implements ECCommand {
 
         if (sendFeedback) {
             if (parent.getPlugin().getPlayerData().chatLocked) {
+                if (player instanceof ECConsole) {
+                    player.sendMessage(ECTextFormatter.translateColors("&aThe chat has been locked"));
+                }
                 parent.getPlugin().getServer().broadcastMessage(ECTextFormatter.translateColors("&aThe chat has been locked"));
             } else {
+                if (player instanceof ECConsole) {
+                    player.sendMessage(ECTextFormatter.translateColors("&aThe chat has been unlocked"));
+                }
                 parent.getPlugin().getServer().broadcastMessage(ECTextFormatter.translateColors("&aThe chat has been unlocked"));
             }
         }

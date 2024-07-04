@@ -40,6 +40,16 @@ public interface ECServer {
         }
     }
 
+    public default void broadcastMessage(@NotNull String message, boolean includeConsole) {
+        if (includeConsole) {
+            this.getConsole().sendMessage(message);
+        }
+
+        for (ECPlayer player : this.getOnlinePlayers()) {
+            player.sendMessage(message);
+        }
+    }
+
     public @NotNull ECCommandManager getCommandManager();
 
     public @NotNull ECEventManager getEventManager();
