@@ -3,7 +3,7 @@ package io.github.evercraftmc.core.api.events;
 public enum ECHandlerOrder {
     FIRST(1),
     BEFORE(2),
-    DONTCARE(3),
+    DONT_CARE(3),
     AFTER(4),
     LAST(5);
 

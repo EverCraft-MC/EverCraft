@@ -8,6 +8,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
@@ -95,6 +96,8 @@ public class ECMessagingServer {
 
                 this.serverWorker = new NioEventLoopGroup(8);
                 this.connectionWorker = new NioEventLoopGroup(512);
+
+                this.channelGroup = new ArrayList<>();
 
                 bootstrap.channel(NioServerSocketChannel.class).group(this.serverWorker, this.connectionWorker);
 

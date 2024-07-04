@@ -8,10 +8,10 @@ import io.github.evercraftmc.core.api.events.player.PlayerChatEvent;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
 import io.github.evercraftmc.core.impl.ECEnvironmentType;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
-import io.github.evercraftmc.core.messaging.ECMessage;
+import io.github.evercraftmc.core.messaging.ECEnvironmentTypeMessageId;
 import io.github.evercraftmc.core.messaging.ECMessageType;
-import io.github.evercraftmc.core.messaging.ECRecipient;
 import io.github.evercraftmc.global.GlobalModule;
+import io.github.evercraftmc.messaging.common.ECMessage;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +56,7 @@ public class ChatListener implements ECListener {
                     }
                     chatMessage.close();
 
-                    parent.getPlugin().getMessenger().send(ECRecipient.fromEnvironmentType(ECEnvironmentType.PROXY), chatMessageData.toByteArray());
+                    parent.getPlugin().getMessenger().send(new ECEnvironmentTypeMessageId(ECEnvironmentType.PROXY), chatMessageData.toByteArray());
                 } catch (IOException e) {
                     parent.getPlugin().getLogger().error("[Messenger] Failed to send message", e);
                 }

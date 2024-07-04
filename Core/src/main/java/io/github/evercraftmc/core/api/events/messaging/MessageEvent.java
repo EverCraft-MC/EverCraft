@@ -1,8 +1,8 @@
 package io.github.evercraftmc.core.api.events.messaging;
 
 import io.github.evercraftmc.core.api.events.ECEvent;
-import io.github.evercraftmc.core.messaging.ECMessage;
 import io.github.evercraftmc.core.messaging.ECMessenger;
+import io.github.evercraftmc.messaging.common.ECMessage;
 import org.jetbrains.annotations.NotNull;
 
 public class MessageEvent extends ECEvent {

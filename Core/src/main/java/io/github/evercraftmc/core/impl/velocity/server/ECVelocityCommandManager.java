@@ -13,9 +13,9 @@ import io.github.evercraftmc.core.api.server.player.ECPlayer;
 import io.github.evercraftmc.core.impl.ECEnvironmentType;
 import io.github.evercraftmc.core.impl.util.ECComponentFormatter;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
-import io.github.evercraftmc.core.messaging.ECMessage;
+import io.github.evercraftmc.core.messaging.ECEnvironmentTypeMessageId;
 import io.github.evercraftmc.core.messaging.ECMessageType;
-import io.github.evercraftmc.core.messaging.ECRecipient;
+import io.github.evercraftmc.messaging.common.ECMessage;
 import java.io.*;
 import java.util.*;
 import org.jetbrains.annotations.NotNull;
@@ -62,7 +62,7 @@ public class ECVelocityCommandManager implements ECCommandManager {
                             }
                             commandMessage.close();
 
-                            parent.server.getPlugin().getMessenger().send(ECRecipient.fromEnvironmentType(ECEnvironmentType.BACKEND), commandMessageData.toByteArray());
+                            parent.server.getPlugin().getMessenger().send(new ECEnvironmentTypeMessageId(ECEnvironmentType.BACKEND), commandMessageData.toByteArray());
                         } catch (IOException e) {
                             parent.server.getPlugin().getLogger().error("[Messenger] Failed to send message", e);
                         }

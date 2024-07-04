@@ -24,7 +24,7 @@ dependencies {
 
     implementation "com.mysql:mysql-connector-j:${mysql_version}"
 
-    compileOnly "org.slf4j:slf4j-api:${slf4j_version}"
+    implementation "org.slf4j:slf4j-api:${slf4j_version}"
 }
 
 tasks.register("fatJar", Jar) {

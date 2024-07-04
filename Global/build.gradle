@@ -13,10 +13,11 @@ repositories {
 
 dependencies {
     compileOnly project(":Core")
+    compileOnly project(":Messaging")
 
     implementation "io.github.kale_ko:ejcl:${ejcl_version}"
 
-    compileOnly "org.slf4j:slf4j-api:${slf4j_version}"
+    implementation "org.slf4j:slf4j-api:${slf4j_version}"
 }
 
 tasks.register("fatJar", Jar) {

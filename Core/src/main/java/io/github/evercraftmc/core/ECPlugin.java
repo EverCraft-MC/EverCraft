@@ -42,7 +42,7 @@ public class ECPlugin {
         public String host = "127.0.0.1";
         public int port = 3000;
 
-        public UUID id = UUID.fromString(System.getProperty("serverID"));
+        public UUID id = null;
     }
 
     private static class MySQLDetails {
@@ -109,12 +109,12 @@ public class ECPlugin {
             StructuredYamlFileConfig<MessagingDetails> messagingDetails = new StructuredYamlFileConfig<>(MessagingDetails.class, dataDirectory.toPath().resolve("messaging.yml").toFile(), new YamlParser.Builder().build());
             messagingDetails.load(true);
             if (messagingDetails.get().id == null) {
-                messagingDetails.get().id = UUID.randomUUID();
+                messagingDetails.get().id = UUID.fromString(System.getProperty("serverID"));
                 messagingDetails.save();
             }
 
             this.messenger = new ECMessenger(this, new InetSocketAddress(messagingDetails.get().host, messagingDetails.get().port), messagingDetails.get().id);
-            this.messenger.connect();
+            this.messenger.start();
 
             this.logger.info("Connected to Messaging server");
         } catch (Exception e) {
@@ -148,9 +148,11 @@ public class ECPlugin {
         try {
             this.logger.info("Downloading minecraft translations..");
 
-            HttpClient httpClient = HttpClient.newBuilder().build();
-            HttpRequest httpRequest = HttpRequest.newBuilder(new URI("https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/" + this.getServer().getMinecraftVersion() + "/assets/minecraft/lang/en_us.json")).GET().build();
-            String response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString()).body();
+            String response;
+            try (HttpClient httpClient = HttpClient.newBuilder().build()) {
+                HttpRequest httpRequest = HttpRequest.newBuilder(new URI("https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/" + this.getServer().getMinecraftVersion() + "/assets/minecraft/lang/en_us.json")).GET().build();
+                response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString()).body();
+            }
 
             this.translations = BJSL.parseJson(response).asObject();
 
@@ -314,7 +316,7 @@ public class ECPlugin {
             }
 
             if (this.messenger != null) {
-                this.messenger.close();
+                this.messenger.stop();
             }
         } catch (IOException e) {
             this.logger.error("Error unloading", e);
