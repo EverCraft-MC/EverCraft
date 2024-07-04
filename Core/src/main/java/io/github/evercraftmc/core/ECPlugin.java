@@ -104,8 +104,6 @@ public class ECPlugin {
         }
 
         try {
-            this.logger.info("Connecting to Messaging server..");
-
             StructuredYamlFileConfig<MessagingDetails> messagingDetails = new StructuredYamlFileConfig<>(MessagingDetails.class, dataDirectory.toPath().resolve("messaging.yml").toFile(), new YamlParser.Builder().build());
             messagingDetails.load(true);
             if (messagingDetails.get().id == null) {
@@ -115,8 +113,6 @@ public class ECPlugin {
 
             this.messenger = new ECMessenger(this, new InetSocketAddress(messagingDetails.get().host, messagingDetails.get().port), messagingDetails.get().id);
             this.messenger.start();
-
-            this.logger.info("Connected to Messaging server");
         } catch (Exception e) {
             this.logger.error("Failed connecting to Messaging server", e);
             return;

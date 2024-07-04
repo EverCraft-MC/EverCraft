@@ -10,6 +10,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Future;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
@@ -49,6 +50,8 @@ public class ECMessagingClient {
                 throw new RuntimeException(this.getClass().getSimpleName() + " is already running!");
             }
 
+            this.logger.info("Connecting to Messaging server");
+
             this.thread = new Thread(this::run, this.getClass().getSimpleName() + "[address=" + this.address + "]");
             this.thread.setDaemon(true);
             this.thread.start();
@@ -61,6 +64,8 @@ public class ECMessagingClient {
                 throw new RuntimeException(this.getClass().getSimpleName() + " is not running!");
             }
             this.running = false;
+
+            this.logger.info("Disconnecting from Messaging server");
 
             Future<?> clientFuture = null;
             if (this.clientWorker != null) {
@@ -94,6 +99,10 @@ public class ECMessagingClient {
 
     protected void reconnect(long delay) {
         Runnable runnable = () -> {
+            if (!this.running) {
+                return;
+            }
+
             Bootstrap bootstrap = new Bootstrap();
 
             bootstrap.channel(NioSocketChannel.class).group(this.clientWorker);
@@ -111,16 +120,36 @@ public class ECMessagingClient {
             ChannelFuture channelFuture = bootstrap.connect(this.address);
 
             channelFuture.addListener((future) -> {
-                this.channel = channelFuture.channel();
-
                 if (!future.isSuccess()) {
                     this.reconnect(delay <= 0 ? 256 : delay * 3);
                 } else {
-                    this.logger.info("Connected to Messaging server");
+                    AtomicBoolean closed = new AtomicBoolean(false);
+                    AtomicBoolean timerUp = new AtomicBoolean(false);
+
+                    this.channel = channelFuture.channel();
 
                     this.channel.closeFuture().addListener((closeFuture) -> {
-                        this.reconnect(256);
+                        if (!this.running) {
+                            this.logger.info("Disconnected from Messaging server");
+                            return;
+                        }
+
+                        closed.set(true);
+
+                        if (timerUp.get()) {
+                            this.reconnect(256);
+                        }
                     });
+
+                    this.clientWorker.schedule(() -> {
+                        if (closed.get()) {
+                            this.reconnect(delay <= 0 ? 256 : delay * 3);
+                        } else {
+                            this.logger.info("Connected to Messaging server");
+                        }
+
+                        timerUp.set(true);
+                    }, 512, TimeUnit.MILLISECONDS);
                 }
             });
         };
