@@ -56,7 +56,7 @@ public class ECMessagingClientHandler extends ChannelDuplexHandler {
                 if (buffer.readableBytes() < 1) {
                     throw new RuntimeException("Invalid message received");
                 }
-                short dataLength = buffer.readShort();
+                int dataLength = buffer.readInt();
 
                 if (buffer.readableBytes() < dataLength) {
                     throw new RuntimeException("Invalid message received");
