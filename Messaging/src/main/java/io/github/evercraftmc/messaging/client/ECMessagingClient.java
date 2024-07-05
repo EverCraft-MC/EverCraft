@@ -1,6 +1,7 @@
 package io.github.evercraftmc.messaging.client;
 
 import io.github.evercraftmc.messaging.client.netty.ECMessagingClientHandler;
+import io.github.evercraftmc.messaging.client.netty.ECMessagingEventHandler;
 import io.github.evercraftmc.messaging.common.ECMessage;
 import io.github.evercraftmc.messaging.common.ECMessageId;
 import io.netty.bootstrap.Bootstrap;
@@ -12,6 +13,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ECMessagingClient {
@@ -21,6 +23,8 @@ public class ECMessagingClient {
 
     protected final @NotNull Object statusLock = new Object();
     protected boolean running = false;
+
+    protected @Nullable ECMessagingEventListener listener;
 
     protected Thread thread;
     protected EventLoopGroup clientWorker;
@@ -38,6 +42,14 @@ public class ECMessagingClient {
 
     public @NotNull InetSocketAddress getAddress() {
         return this.address;
+    }
+
+    public @Nullable ECMessagingEventListener getListener() {
+        return this.listener;
+    }
+
+    public void setListener(@Nullable ECMessagingEventListener listener) {
+        this.listener = listener;
     }
 
     public boolean isRunning() {
@@ -111,6 +123,7 @@ public class ECMessagingClient {
                 @Override
                 public void initChannel(@NotNull NioSocketChannel channel) {
                     channel.pipeline().addLast(new ECMessagingClientHandler(ECMessagingClient.this));
+                    channel.pipeline().addLast(new ECMessagingEventHandler(ECMessagingClient.this));
                 }
             });
 
