@@ -67,7 +67,7 @@ public class ECMessagingClientHandler extends ChannelDuplexHandler {
                 String[] senderString = new String(sender, StandardCharsets.UTF_8).split(":", 2);
                 String[] recipientString = new String(recipient, StandardCharsets.UTF_8).split(":", 2);
 
-                ctx.write(new ECMessage(ECMessageId.parse(senderString[0], senderString[1]), ECMessageId.parse(recipientString[0], recipientString[1]), data));
+                ctx.fireChannelRead(new ECMessage(ECMessageId.parse(senderString[0], senderString[1]), ECMessageId.parse(recipientString[0], recipientString[1]), data));
             } finally {
                 buffer.release();
             }

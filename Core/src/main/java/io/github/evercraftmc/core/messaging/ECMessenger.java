@@ -1,6 +1,7 @@
 package io.github.evercraftmc.core.messaging;
 
 import io.github.evercraftmc.core.ECPlugin;
+import io.github.evercraftmc.core.api.events.messaging.MessageEvent;
 import io.github.evercraftmc.messaging.client.ECMessagingClient;
 import io.github.evercraftmc.messaging.common.ECMessageId;
 import java.net.InetSocketAddress;
@@ -43,6 +44,9 @@ public class ECMessenger {
         ECEnvironmentTypeMessageId.register();
 
         this.client = new ECMessagingClient(parent.getLogger(), this.address);
+        this.client.setListener((message) -> {
+            parent.getServer().getEventManager().emit(new MessageEvent(this, message));
+        });
         this.client.start();
     }
 
