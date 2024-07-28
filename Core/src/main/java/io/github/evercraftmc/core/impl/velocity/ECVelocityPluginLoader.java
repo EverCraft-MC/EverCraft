@@ -38,7 +38,7 @@ public class ECVelocityPluginLoader {
     }
 
     @Subscribe
-    public void onProxyInitialization(@NotNull ProxyShutdownEvent event) {
+    public void onProxyShutdown(@NotNull ProxyShutdownEvent event) {
         this.plugin.unload();
     }
 

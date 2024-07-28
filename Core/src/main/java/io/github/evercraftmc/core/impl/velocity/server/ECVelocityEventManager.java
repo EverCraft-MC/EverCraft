@@ -151,12 +151,15 @@ public class ECVelocityEventManager implements ECEventManager {
         @Subscribe
         public void onPlayerServerConnect(@NotNull ProxyPingEvent event) {
             Map<UUID, String> players = new HashMap<>();
-            if (event.getPing().getPlayers().isPresent()) {
-                for (ServerPing.SamplePlayer player : event.getPing().getPlayers().get().getSample()) {
+
+            Optional<ServerPing.Players> pingPlayers = event.getPing().getPlayers();
+            if (pingPlayers.isPresent()) {
+                for (ServerPing.SamplePlayer player : pingPlayers.get().getSample()) {
                     players.put(player.getId(), player.getName());
                 }
             }
-            PlayerProxyPingEvent newEvent = new PlayerProxyPingEvent(ECComponentFormatter.componentToString(event.getPing().getDescriptionComponent()), event.getPing().getPlayers().get().getOnline(), event.getPing().getPlayers().get().getMax(), players, event.getConnection().getRemoteAddress().getAddress(), event.getConnection().getVirtualHost().orElse(null));
+
+            PlayerProxyPingEvent newEvent = new PlayerProxyPingEvent(ECComponentFormatter.componentToString(event.getPing().getDescriptionComponent()), pingPlayers.isPresent() ? pingPlayers.get().getOnline() : -1, pingPlayers.isPresent() ? pingPlayers.get().getMax() : -1, players, event.getConnection().getRemoteAddress().getAddress(), event.getConnection().getVirtualHost().orElse(null));
             parent.emit(newEvent);
 
             ServerPing.Builder serverPing = ServerPing.builder();
