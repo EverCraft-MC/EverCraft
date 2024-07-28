@@ -21,6 +21,7 @@ dependencies {
 
     compileOnly "io.papermc.paper:paper-api:${paper_version}"
     compileOnly "com.velocitypowered:velocity-api:${velocity_version}"
+    compileOnly "io.netty:netty-all:${netty_version}"
 
     implementation "com.mysql:mysql-connector-j:${mysql_version}"
 

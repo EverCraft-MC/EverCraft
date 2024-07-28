@@ -27,7 +27,13 @@ import io.github.evercraftmc.core.api.server.player.ECPlayer;
 import io.github.evercraftmc.core.impl.util.ECComponentFormatter;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
 import io.github.evercraftmc.core.impl.velocity.server.player.ECVelocityPlayer;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelInitializer;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.nio.file.Files;
@@ -64,6 +70,8 @@ public class ECVelocityEventManager implements ECEventManager {
             } catch (ClassCastException | IOException e) {
                 throw new RuntimeException(e);
             }
+
+            this.setupPacketListener();
         }
 
         @Subscribe
@@ -227,6 +235,116 @@ public class ECVelocityEventManager implements ECEventManager {
                         player.sendMessage(newEvent.getCancelReason());
                     }
                 }
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        protected void setupPacketListener() {
+            try {
+                Field cmField = parent.getServer().getHandle().getClass().getDeclaredField("cm");
+                cmField.setAccessible(true);
+
+                Object cmValue = cmField.get(parent.getServer().getHandle());
+
+                Field serverChannelInitializerHolderField = cmValue.getClass().getDeclaredField("serverChannelInitializer");
+                serverChannelInitializerHolderField.setAccessible(true);
+
+                Object serverChannelInitializerHolder = serverChannelInitializerHolderField.get(cmValue);
+
+                Field serverChannelInitializerField = serverChannelInitializerHolder.getClass().getDeclaredField("initializer");
+                serverChannelInitializerField.setAccessible(true);
+
+                ChannelInitializer<Channel> oldServerChannelInitializer = (ChannelInitializer<Channel>) serverChannelInitializerField.get(serverChannelInitializerHolder);
+
+                Method oldServerChannelInitializerMethod = oldServerChannelInitializer.getClass().getDeclaredMethod("initChannel", Channel.class);
+                oldServerChannelInitializerMethod.setAccessible(true);
+
+                ChannelInitializer<Channel> serverInitializer = new ChannelInitializer<>() {
+                    @Override
+                    protected void initChannel(Channel channel) {
+                        try {
+                            oldServerChannelInitializerMethod.invoke(oldServerChannelInitializer, channel);
+                        } catch (IllegalAccessException | InvocationTargetException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        channel.pipeline().addBefore("handler", "evercraft-handler", new ChannelInboundHandlerAdapter() {
+                            @Override
+                            public void channelRead(ChannelHandlerContext ctx, Object packet) {
+                                if (packet.getClass().getName().equals("com.velocitypowered.proxy.protocol.packet.chat.session.SessionPlayerChatPacket")) {
+                                    try {
+                                        Object newPacket = packet.getClass().getConstructors()[0].newInstance();
+
+                                        Field messageField = newPacket.getClass().getDeclaredField("message");
+                                        messageField.setAccessible(true);
+                                        messageField.set(newPacket, messageField.get(packet));
+
+                                        Field timestampField = newPacket.getClass().getDeclaredField("timestamp");
+                                        timestampField.setAccessible(true);
+                                        timestampField.set(newPacket, timestampField.get(packet));
+
+                                        Field saltField = newPacket.getClass().getDeclaredField("salt");
+                                        saltField.setAccessible(true);
+                                        saltField.set(newPacket, saltField.get(packet));
+
+                                        Field signedField = newPacket.getClass().getDeclaredField("signed");
+                                        signedField.setAccessible(true);
+                                        signedField.set(newPacket, false);
+
+                                        Field signatureField = newPacket.getClass().getDeclaredField("signature");
+                                        signatureField.setAccessible(true);
+                                        signatureField.set(newPacket, new byte[0]);
+
+                                        Field lastSeenMessagesField = newPacket.getClass().getDeclaredField("lastSeenMessages");
+                                        lastSeenMessagesField.setAccessible(true);
+                                        lastSeenMessagesField.set(newPacket, null);
+
+                                        ctx.fireChannelRead(newPacket);
+                                    } catch (NoSuchFieldException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                } else if (packet.getClass().getName().equals("com.velocitypowered.proxy.protocol.packet.chat.session.SessionPlayerCommandPacket")) {
+                                    try {
+                                        Object newPacket = packet.getClass().getConstructors()[0].newInstance();
+
+                                        Field commandField = newPacket.getClass().getDeclaredField("command");
+                                        commandField.setAccessible(true);
+                                        commandField.set(newPacket, commandField.get(packet));
+
+                                        Field timestampField = newPacket.getClass().getDeclaredField("timeStamp");
+                                        timestampField.setAccessible(true);
+                                        timestampField.set(newPacket, timestampField.get(packet));
+
+                                        Field saltField = newPacket.getClass().getDeclaredField("salt");
+                                        saltField.setAccessible(true);
+                                        saltField.set(newPacket, saltField.get(packet));
+
+                                        Field signaturesField = newPacket.getClass().getDeclaredField("argumentSignatures");
+                                        signaturesField.setAccessible(true);
+
+                                        Class<?> signaturesClazz = Class.forName("com.velocitypowered.proxy.protocol.packet.chat.session.SessionPlayerCommandPacket$ArgumentSignatures");
+                                        Object signatures = signaturesClazz.getConstructors()[0].newInstance();
+                                        signaturesField.set(newPacket, signatures);
+
+                                        Field lastSeenMessagesField = newPacket.getClass().getDeclaredField("lastSeenMessages");
+                                        lastSeenMessagesField.setAccessible(true);
+                                        lastSeenMessagesField.set(newPacket, null);
+
+                                        ctx.fireChannelRead(newPacket);
+                                    } catch (NoSuchFieldException | InstantiationException | IllegalAccessException | InvocationTargetException | ClassNotFoundException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                } else {
+                                    ctx.fireChannelRead(packet);
+                                }
+                            }
+                        });
+                    }
+                };
+
+                serverChannelInitializerField.set(serverChannelInitializerHolder, serverInitializer);
+            } catch (NoSuchFieldException | NoSuchMethodException | IllegalAccessException e) {
+                throw new RuntimeException(e);
             }
         }
     }
