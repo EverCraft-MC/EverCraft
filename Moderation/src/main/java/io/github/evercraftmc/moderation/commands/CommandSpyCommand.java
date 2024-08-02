@@ -40,7 +40,7 @@ public class CommandSpyCommand implements ECCommand {
     }
 
     @Override
-    public String getPermission() {
+    public @NotNull String getPermission() {
         return "evercraft.moderation.commands.commandSpy";
     }
 

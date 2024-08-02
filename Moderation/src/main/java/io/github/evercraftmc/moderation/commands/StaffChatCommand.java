@@ -42,7 +42,7 @@ public class StaffChatCommand implements ECCommand {
     }
 
     @Override
-    public String getPermission() {
+    public @NotNull String getPermission() {
         return "evercraft.moderation.commands.staffChat";
     }
 

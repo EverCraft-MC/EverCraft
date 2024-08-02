@@ -41,7 +41,7 @@ public class MaintenanceCommand implements ECCommand {
     }
 
     @Override
-    public String getPermission() {
+    public @NotNull String getPermission() {
         return "evercraft.moderation.commands.maintenance";
     }
 

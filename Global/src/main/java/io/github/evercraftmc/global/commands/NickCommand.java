@@ -47,7 +47,7 @@ public class NickCommand implements ECCommand {
     }
 
     @Override
-    public String getPermission() {
+    public @NotNull String getPermission() {
         return "evercraft.global.commands.nickname";
     }
 
@@ -58,44 +58,56 @@ public class NickCommand implements ECCommand {
 
     @Override
     public boolean run(@NotNull ECPlayer player, @NotNull List<String> args, boolean sendFeedback) {
-        if (!(player instanceof ECConsole)) {
-            if (args.size() > 0) {
-                ECPlayer otherPlayer = parent.getPlugin().getServer().getOnlinePlayer(args.get(0));
+        if (args.size() > 0) {
+            ECPlayer otherPlayer = parent.getPlugin().getServer().getOnlinePlayer(args.get(0));
 
-                if (otherPlayer != null && player.hasPermission("evercraft.global.commands.nickname.other")) {
-                    if (args.size() == 1) {
-                        this.parent.getPlugin().getPlayerData().players.get(otherPlayer.getUuid().toString()).displayName = otherPlayer.getName();
-                        this.parent.getPlugin().saveData();
+            if (otherPlayer != null && player.hasPermission("evercraft.global.commands.nickname.other")) {
+                if (args.size() == 1) {
+                    this.parent.getPlugin().getPlayerData().players.get(otherPlayer.getUuid().toString()).displayName = otherPlayer.getName();
+                    this.parent.getPlugin().saveData();
 
-                        if (sendFeedback) {
-                            player.sendMessage(ECTextFormatter.translateColors("&a" + otherPlayer.getDisplayName() + "&r&a's nickname has been reset."));
-                        }
-                    } else if (args.size() == 2) {
-                        if (ECTextFormatter.stripColors(args.get(1)).length() <= 16 && args.get(1).length() <= 32) {
-                            if (args.get(1).equalsIgnoreCase("reset")) {
-                                this.parent.getPlugin().getPlayerData().players.get(otherPlayer.getUuid().toString()).displayName = otherPlayer.getName();
-                                this.parent.getPlugin().saveData();
-
-                                if (sendFeedback) {
-                                    player.sendMessage(ECTextFormatter.translateColors("&a" + otherPlayer.getDisplayName() + "&r&a's nickname has been reset."));
-                                }
-                            } else {
-                                this.parent.getPlugin().getPlayerData().players.get(otherPlayer.getUuid().toString()).displayName = args.get(1);
-                                this.parent.getPlugin().saveData();
-
-                                if (sendFeedback) {
-                                    player.sendMessage(ECTextFormatter.translateColors("&aSuccessfully set " + otherPlayer.getDisplayName() + "&r&a's nickname to &r" + args.get(1) + "&r&a."));
-                                }
-                            }
-                        } else if (sendFeedback) {
-                            player.sendMessage(ECTextFormatter.translateColors("&cThat nickname is too long."));
-                            return false;
-                        }
-                    } else if (sendFeedback) {
-                        player.sendMessage(ECTextFormatter.translateColors("&cYour nickname can't contain spaces."));
-                        return false;
+                    if (sendFeedback) {
+                        player.sendMessage(ECTextFormatter.translateColors("&a" + otherPlayer.getDisplayName() + "&r&a's nickname has been reset."));
                     }
-                } else {
+
+                    otherPlayer.setOnlineDisplayName(ECTextFormatter.translateColors((parent.getPlugin().getPlayerData().players.get(otherPlayer.getUuid().toString()).prefix != null ? parent.getPlugin().getPlayerData().players.get(otherPlayer.getUuid().toString()).prefix + "&r " : "&r") + parent.getPlugin().getPlayerData().players.get(otherPlayer.getUuid().toString()).displayName + "&r"));
+
+                    PlayerDisplayNameChangeEvent newEvent = new PlayerDisplayNameChangeEvent(player);
+                    parent.getPlugin().getServer().getEventManager().emit(newEvent);
+
+                    return true;
+                } else if (args.size() == 2) {
+                    if (ECTextFormatter.stripColors(args.get(1)).length() <= 16 && args.get(1).length() <= 32) {
+                        if (args.get(1).equalsIgnoreCase("reset")) {
+                            this.parent.getPlugin().getPlayerData().players.get(otherPlayer.getUuid().toString()).displayName = otherPlayer.getName();
+                            this.parent.getPlugin().saveData();
+
+                            if (sendFeedback) {
+                                player.sendMessage(ECTextFormatter.translateColors("&a" + otherPlayer.getDisplayName() + "&r&a's nickname has been reset."));
+                            }
+                        } else {
+                            this.parent.getPlugin().getPlayerData().players.get(otherPlayer.getUuid().toString()).displayName = args.get(1);
+                            this.parent.getPlugin().saveData();
+
+                            if (sendFeedback) {
+                                player.sendMessage(ECTextFormatter.translateColors("&aSuccessfully set " + otherPlayer.getDisplayName() + "&r&a's nickname to &r" + args.get(1) + "&r&a."));
+                            }
+                        }
+
+                        otherPlayer.setOnlineDisplayName(ECTextFormatter.translateColors((parent.getPlugin().getPlayerData().players.get(otherPlayer.getUuid().toString()).prefix != null ? parent.getPlugin().getPlayerData().players.get(otherPlayer.getUuid().toString()).prefix + "&r " : "&r") + parent.getPlugin().getPlayerData().players.get(otherPlayer.getUuid().toString()).displayName + "&r"));
+
+                        PlayerDisplayNameChangeEvent newEvent = new PlayerDisplayNameChangeEvent(player);
+                        parent.getPlugin().getServer().getEventManager().emit(newEvent);
+
+                        return true;
+                    } else if (sendFeedback) {
+                        player.sendMessage(ECTextFormatter.translateColors("&cThat nickname is too long."));
+                    }
+                } else if (sendFeedback) {
+                    player.sendMessage(ECTextFormatter.translateColors("&cYour nickname can't contain spaces."));
+                }
+            } else {
+                if (!(player instanceof ECConsole)) {
                     if (args.size() == 1) {
                         if (ECTextFormatter.stripColors(args.get(0)).length() <= 16 && args.get(0).length() <= 32) {
                             if (args.get(0).equalsIgnoreCase("reset")) {
@@ -113,33 +125,41 @@ public class NickCommand implements ECCommand {
                                     player.sendMessage(ECTextFormatter.translateColors("&aSuccessfully set your nickname to &r" + args.get(0) + "&r&a."));
                                 }
                             }
+
+                            player.setOnlineDisplayName(ECTextFormatter.translateColors((parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).prefix != null ? parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).prefix + "&r " : "&r") + parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).displayName + "&r"));
+
+                            PlayerDisplayNameChangeEvent newEvent = new PlayerDisplayNameChangeEvent(player);
+                            parent.getPlugin().getServer().getEventManager().emit(newEvent);
+
+                            return true;
                         } else if (sendFeedback) {
                             player.sendMessage(ECTextFormatter.translateColors("&cThat nickname is too long."));
-                            return false;
                         }
                     } else if (sendFeedback) {
                         player.sendMessage(ECTextFormatter.translateColors("&cYour nickname can't contain spaces."));
-                        return false;
                     }
+                } else if (sendFeedback) {
+                    player.sendMessage(ECTextFormatter.translateColors("&cYou can't do that from the console."));
                 }
-            } else {
+            }
+        } else {
+            if (!(player instanceof ECConsole)) {
                 this.parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).displayName = player.getName();
                 this.parent.getPlugin().saveData();
 
                 if (sendFeedback) {
                     player.sendMessage(ECTextFormatter.translateColors("&aYour nickname has been reset."));
                 }
+
+                player.setOnlineDisplayName(ECTextFormatter.translateColors((parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).prefix != null ? parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).prefix + "&r " : "&r") + parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).displayName + "&r"));
+
+                PlayerDisplayNameChangeEvent newEvent = new PlayerDisplayNameChangeEvent(player);
+                parent.getPlugin().getServer().getEventManager().emit(newEvent);
+
+                return true;
+            } else if (sendFeedback) {
+                player.sendMessage(ECTextFormatter.translateColors("&cYou can't do that from the console."));
             }
-
-            player.setOnlineDisplayName(ECTextFormatter.translateColors((parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).prefix != null ? parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).prefix + "&r " : "&r") + parent.getPlugin().getPlayerData().players.get(player.getUuid().toString()).displayName + "&r"));
-
-            PlayerDisplayNameChangeEvent newEvent = new PlayerDisplayNameChangeEvent(player);
-            parent.getPlugin().getServer().getEventManager().emit(newEvent);
-
-            return true;
-        } else if (sendFeedback) {
-            player.sendMessage(ECTextFormatter.translateColors("&cYou can't do that from the console."));
-            return false;
         }
 
         return false;

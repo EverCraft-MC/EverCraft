@@ -31,7 +31,7 @@ public class HelpCommand implements ECCommand {
 
     @Override
     public @NotNull String getUsage() {
-        return "/help [<plugin>]";
+        return "/help [<command>]";
     }
 
     @Override
@@ -40,7 +40,7 @@ public class HelpCommand implements ECCommand {
     }
 
     @Override
-    public String getPermission() {
+    public @NotNull String getPermission() {
         return "evercraft.global.commands.help";
     }
 
@@ -52,7 +52,7 @@ public class HelpCommand implements ECCommand {
     public boolean run(@NotNull ECPlayer player, @NotNull List<String> args, boolean sendFeedback) {
         if (args.size() > 0) {
             ECCommand command = parent.getPlugin().getServer().getCommandManager().get(args.get(0));
-            if (command == null || !player.hasPermission(command.getPermission())) {
+            if (command == null || !(command.getPermission() == null || player.hasPermission(command.getPermission()))) {
                 player.sendMessage(ECTextFormatter.translateColors("&cCommand \"" + args.get(0) + "\" could not be found"));
                 return false;
             }
@@ -72,7 +72,7 @@ public class HelpCommand implements ECCommand {
             StringBuilder out = new StringBuilder();
 
             for (ECCommand command : parent.getPlugin().getServer().getCommandManager().getAll()) {
-                if (player.hasPermission(command.getPermission())) {
+                if (command.getPermission() == null || player.hasPermission(command.getPermission())) {
                     out.append("&r&a").append(command.getUsage(player)).append(" - ").append(command.getDescription()).append("\n");
                 }
             }

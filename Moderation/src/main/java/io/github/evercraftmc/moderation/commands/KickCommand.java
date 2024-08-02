@@ -41,7 +41,7 @@ public class KickCommand implements ECCommand {
     }
 
     @Override
-    public String getPermission() {
+    public @NotNull String getPermission() {
         return "evercraft.moderation.commands.kick";
     }
 
