@@ -49,11 +49,6 @@ public interface ECConsole extends ECPlayer {
     }
 
     @Override
-    public default @Nullable String getServer() {
-        throw new UnsupportedOperationException("Player is console");
-    }
-
-    @Override
     public default void kick(@NotNull String message) {
         throw new UnsupportedOperationException("Player is console");
     }

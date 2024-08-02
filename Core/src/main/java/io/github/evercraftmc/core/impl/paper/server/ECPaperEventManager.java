@@ -46,7 +46,7 @@ public class ECPaperEventManager implements ECEventManager {
         @EventHandler
         public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
             Component ogMessage = event.joinMessage();
-            io.github.evercraftmc.core.api.events.player.PlayerJoinEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerJoinEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), ogMessage != null ? ECComponentFormatter.componentToString(ogMessage) : "");
+            io.github.evercraftmc.core.api.events.player.PlayerJoinEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerJoinEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), ogMessage != null ? ECComponentFormatter.componentToString(ogMessage) : "");
             parent.emit(newEvent);
 
             event.joinMessage(Component.empty());
@@ -61,7 +61,7 @@ public class ECPaperEventManager implements ECEventManager {
         @EventHandler
         public void onPlayerLeave(@NotNull PlayerQuitEvent event) {
             Component ogMessage = event.quitMessage();
-            io.github.evercraftmc.core.api.events.player.PlayerLeaveEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerLeaveEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), event.getPlayer()), ogMessage != null ? ECComponentFormatter.componentToString(ogMessage) : "");
+            io.github.evercraftmc.core.api.events.player.PlayerLeaveEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerLeaveEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), ogMessage != null ? ECComponentFormatter.componentToString(ogMessage) : "");
             parent.emit(newEvent);
 
             event.quitMessage(Component.empty());
@@ -81,7 +81,7 @@ public class ECPaperEventManager implements ECEventManager {
 
             ECPaperPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
 
-            PlayerChatEvent newEvent = new PlayerChatEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(player.getUuid().toString()), player.getHandle()), message, PlayerChatEvent.MessageType.CHAT, new ArrayList<>(parent.getServer().getOnlinePlayers()));
+            PlayerChatEvent newEvent = new PlayerChatEvent(player, message, PlayerChatEvent.MessageType.CHAT, new ArrayList<>(parent.getServer().getOnlinePlayers()));
             parent.emit(newEvent);
 
             event.message(Component.empty());
@@ -108,7 +108,7 @@ public class ECPaperEventManager implements ECEventManager {
 
             ECPaperPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
 
-            PlayerCommandEvent newEvent = new PlayerCommandEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(player.getUuid().toString()), player.getHandle()), message);
+            PlayerCommandEvent newEvent = new PlayerCommandEvent(player, message);
             parent.emit(newEvent);
 
             if (newEvent.isCancelled()) {
@@ -130,7 +130,7 @@ public class ECPaperEventManager implements ECEventManager {
 
             ECPaperPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
 
-            PlayerChatEvent newEvent = new PlayerChatEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(player.getUuid().toString()), player.getHandle()), message, PlayerChatEvent.MessageType.DEATH, new ArrayList<>(parent.getServer().getOnlinePlayers()));
+            PlayerChatEvent newEvent = new PlayerChatEvent(player, message, PlayerChatEvent.MessageType.DEATH, new ArrayList<>(parent.getServer().getOnlinePlayers()));
             parent.emit(newEvent);
 
             event.deathMessage(Component.empty());
@@ -156,7 +156,7 @@ public class ECPaperEventManager implements ECEventManager {
 
             ECPaperPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
 
-            PlayerChatEvent newEvent = new PlayerChatEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(player.getUuid().toString()), player.getHandle()), message, PlayerChatEvent.MessageType.ADVANCEMENT, new ArrayList<>(parent.getServer().getOnlinePlayers()));
+            PlayerChatEvent newEvent = new PlayerChatEvent(player, message, PlayerChatEvent.MessageType.ADVANCEMENT, new ArrayList<>(parent.getServer().getOnlinePlayers()));
             parent.emit(newEvent);
 
             event.message(Component.empty());

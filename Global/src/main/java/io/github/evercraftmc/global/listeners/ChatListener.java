@@ -6,6 +6,7 @@ import io.github.evercraftmc.core.api.events.ECListener;
 import io.github.evercraftmc.core.api.events.messaging.MessageEvent;
 import io.github.evercraftmc.core.api.events.player.PlayerChatEvent;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
+import io.github.evercraftmc.core.api.server.player.ECProxyPlayer;
 import io.github.evercraftmc.core.impl.ECEnvironmentType;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
 import io.github.evercraftmc.core.messaging.ECEnvironmentTypeMessageId;
@@ -95,8 +96,8 @@ public class ChatListener implements ECListener {
                         }
                     } else if (!newEvent.getMessage().isEmpty()) {
                         for (ECPlayer player2 : (!newEvent.getRecipients().isEmpty() ? newEvent.getRecipients() : parent.getPlugin().getServer().getOnlinePlayers())) {
-                            if (player.getServer() == null || !player.getServer().equalsIgnoreCase(player2.getServer())) {
-                                player2.sendMessage(ECTextFormatter.translateColors("&r[" + player.getServer().substring(0, 1).toUpperCase() + player.getServer().substring(1).toLowerCase() + "&r] " + newEvent.getMessage()));
+                            if (player instanceof ECProxyPlayer proxyPlayer && (proxyPlayer.getServer() == null || !(player2 instanceof ECProxyPlayer proxyPlayer2 && proxyPlayer.getServer().equals(proxyPlayer2.getServer())))) {
+                                player2.sendMessage(ECTextFormatter.translateColors("&r[" + proxyPlayer.getServer().name().substring(0, 1).toUpperCase() + proxyPlayer.getServer().name().substring(1).toLowerCase() + "&r] " + newEvent.getMessage()));
                             } else {
                                 player2.sendMessage(ECTextFormatter.translateColors("&r" + newEvent.getMessage()));
                             }

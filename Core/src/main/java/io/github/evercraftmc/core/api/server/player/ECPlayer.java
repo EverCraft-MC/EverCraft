@@ -23,8 +23,6 @@ public interface ECPlayer {
 
     public @Nullable InetSocketAddress getServerAddress();
 
-    public @Nullable String getServer();
-
     public boolean hasPermission(@NotNull String permission);
 
     public void sendMessage(@NotNull String message);

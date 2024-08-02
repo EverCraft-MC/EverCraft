@@ -102,7 +102,7 @@ public class ECPaperServer implements ECServer {
 
         for (Player paperPlayer : this.handle.getOnlinePlayers()) {
             if (this.plugin.getPlayerData().players.containsKey(paperPlayer.getUniqueId().toString())) {
-                players.add(new ECPaperPlayer(this.plugin.getPlayerData().players.get(paperPlayer.getUniqueId().toString()), paperPlayer));
+                players.add(new ECPaperPlayer(this.plugin.getPlayerData().players.get(paperPlayer.getUniqueId().toString()), this, paperPlayer));
             }
         }
 
@@ -113,7 +113,7 @@ public class ECPaperServer implements ECServer {
     public ECPaperPlayer getOnlinePlayer(@NotNull UUID uuid) {
         Player paperPlayer = this.handle.getPlayer(uuid);
         if (paperPlayer != null && this.plugin.getPlayerData().players.containsKey(uuid.toString())) {
-            return new ECPaperPlayer(this.plugin.getPlayerData().players.get(uuid.toString()), paperPlayer);
+            return new ECPaperPlayer(this.plugin.getPlayerData().players.get(uuid.toString()), this, paperPlayer);
         }
 
         return null;
@@ -125,7 +125,7 @@ public class ECPaperServer implements ECServer {
         if (paperPlayer != null) {
             for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) {
                 if (player.name.equalsIgnoreCase(name)) {
-                    return new ECPaperPlayer(player, paperPlayer);
+                    return new ECPaperPlayer(player, this, paperPlayer);
                 }
             }
         }

@@ -2,6 +2,7 @@ package io.github.evercraftmc.core.impl.paper.server.player;
 
 import io.github.evercraftmc.core.ECPlayerData;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
+import io.github.evercraftmc.core.impl.paper.server.ECPaperServer;
 import io.github.evercraftmc.core.impl.util.ECComponentFormatter;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
 import java.net.InetAddress;
@@ -12,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ECPaperPlayer implements ECPlayer {
+    protected final ECPaperServer parent;
     protected final Player handle;
 
     protected final @NotNull UUID uuid;
@@ -25,15 +27,17 @@ public class ECPaperPlayer implements ECPlayer {
 
         this.displayName = ECTextFormatter.translateColors((data.prefix != null ? data.prefix + "&r " : "&r") + data.displayName + "&r");
 
+        this.parent = null;
         this.handle = null;
     }
 
-    public ECPaperPlayer(@NotNull ECPlayerData.Player data, @NotNull Player handle) {
+    public ECPaperPlayer(@NotNull ECPlayerData.Player data, @NotNull ECPaperServer parent, @NotNull Player handle) {
         this.uuid = data.uuid;
         this.name = data.name;
 
         this.displayName = ECTextFormatter.translateColors((data.prefix != null ? data.prefix + "&r " : "&r") + data.displayName + "&r");
 
+        this.parent = parent;
         this.handle = handle;
     }
 
@@ -89,11 +93,6 @@ public class ECPaperPlayer implements ECPlayer {
     @Override
     public @Nullable InetSocketAddress getServerAddress() {
         return this.handle.getVirtualHost();
-    }
-
-    @Override
-    public @Nullable String getServer() {
-        throw new UnsupportedOperationException("Server is backend");
     }
 
     @Override
