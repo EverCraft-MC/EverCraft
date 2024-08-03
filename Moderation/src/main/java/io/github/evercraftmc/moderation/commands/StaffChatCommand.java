@@ -33,7 +33,7 @@ public class StaffChatCommand implements ECCommand {
 
     @Override
     public @NotNull String getUsage() {
-        return "/commandSpy [(on|off|<message>)]";
+        return "/staffChat [(on|off|<message>)]";
     }
 
     @Override

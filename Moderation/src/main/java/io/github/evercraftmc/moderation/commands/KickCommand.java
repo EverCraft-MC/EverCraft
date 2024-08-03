@@ -27,7 +27,7 @@ public class KickCommand implements ECCommand {
 
     @Override
     public @NotNull String getUsage() {
-        return "/kick <player> <reason>";
+        return "/kick <player> [<reason>]";
     }
 
     @Override

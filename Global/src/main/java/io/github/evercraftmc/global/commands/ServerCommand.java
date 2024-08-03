@@ -64,14 +64,14 @@ public class ServerCommand implements ECCommand {
 
             if (otherPlayer != null && player.hasPermission("evercraft.global.commands.nickname.other")) {
                 if (args.size() == 2) {
-                    ECProxyServer.Server server = ((ECProxyServer) parent.getPlugin().getServer()).getServer(args.get(0));
+                    ECProxyServer.Server server = ((ECProxyServer) parent.getPlugin().getServer()).getServer(args.get(1));
 
                     if (server != null) {
                         ((ECProxyPlayer) otherPlayer).setServer(server);
 
                         return true;
                     } else {
-                        player.sendMessage(ECTextFormatter.translateColors("&cUnknown server \"" + args.get(0) + "\"!"));
+                        player.sendMessage(ECTextFormatter.translateColors("&cUnknown server \"" + args.get(1) + "\"!"));
                     }
                 } else if (sendFeedback) {
                     player.sendMessage(ECTextFormatter.translateColors("&cToo many arguments!"));
