@@ -26,6 +26,10 @@ public class GlobalModule extends ECModule {
         this.commands.add(this.plugin.getServer().getCommandManager().register(new MessageCommand(this), false, false));
         this.commands.add(this.plugin.getServer().getCommandManager().register(new ReplyCommand(this), false, false));
 
+        if (this.plugin.getEnvironment().getType() == ECEnvironmentType.PROXY) {
+            this.commands.add(this.plugin.getServer().getCommandManager().register(new ServerCommand(this), false, false));
+        }
+
         this.commands.add(this.plugin.getServer().getCommandManager().register(new DebugCommand(this), true, false));
 
         this.listeners.add(this.plugin.getServer().getEventManager().register(new JoinListener(this)));
