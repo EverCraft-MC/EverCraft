@@ -6,7 +6,7 @@ public abstract class ECCancelableReasonEvent extends ECCancelableEvent {
     protected @NotNull String cancelReason = "";
 
     public @NotNull String getCancelReason() {
-        return cancelReason;
+        return this.cancelReason;
     }
 
     public void setCancelReason(@NotNull String cancelReason) {

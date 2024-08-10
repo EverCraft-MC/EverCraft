@@ -2,6 +2,7 @@ package io.github.evercraftmc.core.api;
 
 import java.util.Collections;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ECModuleInfo {
@@ -14,10 +15,16 @@ public class ECModuleInfo {
     protected @Nullable List<String> depends;
 
     public ECModuleInfo() {
-        this(null, null, null, null, null);
+        this.name = null;
+        this.version = null;
+
+        this.entry = null;
+
+        this.environment = null;
+        this.depends = null;
     }
 
-    public ECModuleInfo(String name, String version, String entry, @Nullable String environment, @Nullable List<String> depends) {
+    public ECModuleInfo(@NotNull String name, @NotNull String version, @NotNull String entry, @Nullable String environment, @Nullable List<String> depends) {
         this.name = name;
         this.version = version;
 
@@ -27,15 +34,24 @@ public class ECModuleInfo {
         this.depends = depends;
     }
 
-    public String getName() {
+    public @NotNull String getName() {
+        if (this.name == null) {
+            throw new RuntimeException("Module name must be set!");
+        }
         return this.name;
     }
 
-    public String getVersion() {
+    public @NotNull String getVersion() {
+        if (this.version == null) {
+            throw new RuntimeException("Module version must be set!");
+        }
         return this.version;
     }
 
-    public String getEntry() {
+    public @NotNull String getEntry() {
+        if (this.entry == null) {
+            throw new RuntimeException("Module entrypoint must be set!");
+        }
         return this.entry;
     }
 

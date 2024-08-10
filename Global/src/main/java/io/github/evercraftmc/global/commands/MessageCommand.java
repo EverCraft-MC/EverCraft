@@ -66,7 +66,7 @@ public class MessageCommand implements ECCommand {
 
                 if (sendFeedback) {
                     List<ECPlayer> recipients = List.of(player2);
-                    PlayerChatEvent newEvent = new PlayerChatEvent(player, "&b&l[DM] &r" + player.getDisplayName() + " &r&8-> &4You &r> " + ECTextFormatter.stripColors(message.trim()), PlayerChatEvent.MessageType.DM, recipients);
+                    PlayerChatEvent newEvent = new PlayerChatEvent(player, PlayerChatEvent.MessageType.DM, "&b&l[DM] &r" + player.getDisplayName() + " &r&8-> &4You &r> " + ECTextFormatter.stripColors(message.trim()), recipients);
                     parent.getPlugin().getServer().getEventManager().emit(newEvent);
 
                     if (newEvent.isCancelled()) {

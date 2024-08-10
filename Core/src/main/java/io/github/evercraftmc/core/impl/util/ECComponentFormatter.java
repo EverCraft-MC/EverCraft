@@ -9,10 +9,8 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.NotNull;
 
-public class ECComponentFormatter {
-    protected static final char COLOR_CHAR = ECTextFormatter.TO_COLOR_CHAR;
-
-    protected static final @NotNull String ALL_CODES = "0123456789AaBbCcDdEeFfKkLlMmNnOoRr";
+public final class ECComponentFormatter {
+    public static final char COLOR_CHAR = ECTextFormatter.TO_COLOR_CHAR;
 
     private ECComponentFormatter() {
     }
@@ -77,9 +75,11 @@ public class ECComponentFormatter {
                 style = style.decorate(TextDecoration.OBFUSCATED);
             }
 
-            TextComponent child = Component.text(text);
-            child = child.style(style);
-            component = component.append(child);
+            if (!text.isEmpty()) {
+                TextComponent child = Component.text(text);
+                child = child.style(style);
+                component = component.append(child);
+            }
         }
 
         return component;
@@ -93,6 +93,22 @@ public class ECComponentFormatter {
         if (style.isEmpty()) {
             string.append(COLOR_CHAR).append("r");
         } else {
+            if (style.hasDecoration(TextDecoration.BOLD)) {
+                string.append(COLOR_CHAR).append('l');
+            }
+            if (style.hasDecoration(TextDecoration.STRIKETHROUGH)) {
+                string.append(COLOR_CHAR).append('m');
+            }
+            if (style.hasDecoration(TextDecoration.UNDERLINED)) {
+                string.append(COLOR_CHAR).append('n');
+            }
+            if (style.hasDecoration(TextDecoration.ITALIC)) {
+                string.append(COLOR_CHAR).append('o');
+            }
+            if (style.hasDecoration(TextDecoration.OBFUSCATED)) {
+                string.append(COLOR_CHAR).append('k');
+            }
+
             if (style.color() == NamedTextColor.BLACK) {
                 string.append(COLOR_CHAR).append('0');
             } else if (style.color() == NamedTextColor.DARK_BLUE) {
@@ -126,22 +142,6 @@ public class ECComponentFormatter {
             } else if (style.color() == NamedTextColor.WHITE) {
                 string.append(COLOR_CHAR).append('f');
             }
-
-            if (style.hasDecoration(TextDecoration.BOLD)) {
-                string.append(COLOR_CHAR).append('l');
-            }
-            if (style.hasDecoration(TextDecoration.STRIKETHROUGH)) {
-                string.append(COLOR_CHAR).append('m');
-            }
-            if (style.hasDecoration(TextDecoration.UNDERLINED)) {
-                string.append(COLOR_CHAR).append('n');
-            }
-            if (style.hasDecoration(TextDecoration.ITALIC)) {
-                string.append(COLOR_CHAR).append('o');
-            }
-            if (style.hasDecoration(TextDecoration.OBFUSCATED)) {
-                string.append(COLOR_CHAR).append('k');
-            }
         }
 
         if (component instanceof TextComponent textComponent) {
@@ -156,7 +156,7 @@ public class ECComponentFormatter {
         }
 
         for (Component child : component.children()) {
-            string.append(componentToString(child));
+            string.append(COLOR_CHAR).append("r").append(componentToString(child));
         }
 
         return string.toString();

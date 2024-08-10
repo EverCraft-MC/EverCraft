@@ -4,19 +4,13 @@ import io.github.evercraftmc.core.ECPlugin;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class ECModule {
-    protected ECModuleInfo info;
+    protected final ECPlugin plugin;
 
-    protected ECPlugin plugin;
+    protected final ECModuleInfo info;
 
-    public @NotNull String getName() {
-        return this.getInfo().getName();
-    }
+    protected ECModule(@NotNull ECPlugin plugin, @NotNull ECModuleInfo info) {
+        this.plugin = plugin;
 
-    public @NotNull ECModuleInfo getInfo() {
-        return this.info;
-    }
-
-    public void setInfo(@NotNull ECModuleInfo info) {
         this.info = info;
     }
 
@@ -24,8 +18,12 @@ public abstract class ECModule {
         return this.plugin;
     }
 
-    public void setPlugin(@NotNull ECPlugin plugin) {
-        this.plugin = plugin;
+    public @NotNull String getName() {
+        return this.getInfo().getName();
+    }
+
+    public @NotNull ECModuleInfo getInfo() {
+        return this.info;
     }
 
     public abstract void load();

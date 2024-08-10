@@ -1,15 +1,15 @@
 package io.github.evercraftmc.core.api.events;
 
 public enum ECHandlerOrder {
-    FIRST(1),
-    BEFORE(2),
-    DONT_CARE(3),
-    AFTER(4),
-    LAST(5);
+    FIRST(0),
+    BEFORE(25),
+    DONT_CARE(50),
+    AFTER(75),
+    LAST(100);
 
-    final int value;
+    private final int value;
 
-    ECHandlerOrder(int value) {
+    private ECHandlerOrder(int value) {
         this.value = value;
     }
 

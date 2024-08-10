@@ -10,17 +10,18 @@ import org.jetbrains.annotations.Nullable;
 
 public class PlayerProxyPingEvent extends ECEvent {
     protected @NotNull String motd;
-    protected boolean centerMotd = false;
+    protected boolean centerMotd;
 
     protected int onlinePlayers;
     protected int maxPlayers;
     protected @NotNull Map<UUID, String> players;
 
-    protected @Nullable InetAddress address;
-    protected @Nullable InetSocketAddress serverAddress;
+    protected final @Nullable InetAddress address;
+    protected final @Nullable InetSocketAddress serverAddress;
 
-    public PlayerProxyPingEvent(@NotNull String motd, int onlinePlayers, int maxPlayers, @NotNull Map<UUID, String> players, @Nullable InetAddress address, @Nullable InetSocketAddress serverAddress) {
+    public PlayerProxyPingEvent(@NotNull String motd, boolean centerMotd, int onlinePlayers, int maxPlayers, @NotNull Map<UUID, String> players, @Nullable InetAddress address, @Nullable InetSocketAddress serverAddress) {
         this.motd = motd;
+        this.centerMotd = centerMotd;
 
         this.onlinePlayers = onlinePlayers;
         this.maxPlayers = maxPlayers;

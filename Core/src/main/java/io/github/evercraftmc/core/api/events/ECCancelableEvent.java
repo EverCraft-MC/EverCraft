@@ -4,7 +4,7 @@ public abstract class ECCancelableEvent extends ECEvent {
     protected boolean cancelled = false;
 
     public boolean isCancelled() {
-        return cancelled;
+        return this.cancelled;
     }
 
     public void setCancelled(boolean cancelled) {

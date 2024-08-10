@@ -168,7 +168,7 @@ public class ECVelocityEventManager implements ECEventManager {
                 }
             }
 
-            PlayerProxyPingEvent newEvent = new PlayerProxyPingEvent(ECComponentFormatter.componentToString(event.getPing().getDescriptionComponent()), pingPlayers.isPresent() ? pingPlayers.get().getOnline() : -1, pingPlayers.isPresent() ? pingPlayers.get().getMax() : -1, players, event.getConnection().getRemoteAddress().getAddress(), event.getConnection().getVirtualHost().orElse(null));
+            PlayerProxyPingEvent newEvent = new PlayerProxyPingEvent(ECComponentFormatter.componentToString(event.getPing().getDescriptionComponent()), false, pingPlayers.isPresent() ? pingPlayers.get().getOnline() : -1, pingPlayers.isPresent() ? pingPlayers.get().getMax() : -1, players, event.getConnection().getRemoteAddress().getAddress(), event.getConnection().getVirtualHost().orElse(null));
             parent.emit(newEvent);
 
             ServerPing.Builder serverPing = ServerPing.builder();
@@ -207,7 +207,7 @@ public class ECVelocityEventManager implements ECEventManager {
             ECVelocityPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
 
             if (message.charAt(0) != '/') {
-                PlayerChatEvent newEvent = new PlayerChatEvent(player, message, PlayerChatEvent.MessageType.CHAT, new ArrayList<>());
+                PlayerChatEvent newEvent = new PlayerChatEvent(player, PlayerChatEvent.MessageType.CHAT, message, new ArrayList<>());
                 parent.emit(newEvent);
 
                 event.setResult(com.velocitypowered.api.event.player.PlayerChatEvent.ChatResult.denied());

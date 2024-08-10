@@ -81,7 +81,7 @@ public class ECPaperEventManager implements ECEventManager {
 
             ECPaperPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
 
-            PlayerChatEvent newEvent = new PlayerChatEvent(player, message, PlayerChatEvent.MessageType.CHAT, new ArrayList<>(parent.getServer().getOnlinePlayers()));
+            PlayerChatEvent newEvent = new PlayerChatEvent(player, PlayerChatEvent.MessageType.CHAT, message, new ArrayList<>(parent.getServer().getOnlinePlayers()));
             parent.emit(newEvent);
 
             event.message(Component.empty());
@@ -130,7 +130,7 @@ public class ECPaperEventManager implements ECEventManager {
 
             ECPaperPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
 
-            PlayerChatEvent newEvent = new PlayerChatEvent(player, message, PlayerChatEvent.MessageType.DEATH, new ArrayList<>(parent.getServer().getOnlinePlayers()));
+            PlayerChatEvent newEvent = new PlayerChatEvent(player, PlayerChatEvent.MessageType.DEATH, message, new ArrayList<>(parent.getServer().getOnlinePlayers()));
             parent.emit(newEvent);
 
             event.deathMessage(Component.empty());
@@ -156,7 +156,7 @@ public class ECPaperEventManager implements ECEventManager {
 
             ECPaperPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
 
-            PlayerChatEvent newEvent = new PlayerChatEvent(player, message, PlayerChatEvent.MessageType.ADVANCEMENT, new ArrayList<>(parent.getServer().getOnlinePlayers()));
+            PlayerChatEvent newEvent = new PlayerChatEvent(player, PlayerChatEvent.MessageType.ADVANCEMENT, message, new ArrayList<>(parent.getServer().getOnlinePlayers()));
             parent.emit(newEvent);
 
             event.message(Component.empty());

@@ -87,7 +87,7 @@ public class ChatListener implements ECListener {
 
                     ECPlayer player = parent.getPlugin().getServer().getOnlinePlayer(uuid);
 
-                    PlayerChatEvent newEvent = new PlayerChatEvent(player, chat, chatType, recipients);
+                    PlayerChatEvent newEvent = new PlayerChatEvent(player, chatType, chat, recipients);
                     parent.getPlugin().getServer().getEventManager().emit(newEvent);
 
                     if (newEvent.isCancelled()) {

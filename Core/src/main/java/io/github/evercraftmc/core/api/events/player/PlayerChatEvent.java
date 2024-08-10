@@ -8,17 +8,17 @@ import org.jetbrains.annotations.NotNull;
 public class PlayerChatEvent extends ECCancelableReasonEvent {
     protected final @NotNull ECPlayer player;
 
-    protected int type;
+    protected final int type;
 
     protected @NotNull String message;
     protected @NotNull List<ECPlayer> recipients;
 
-    public PlayerChatEvent(@NotNull ECPlayer player, @NotNull String message, int type, @NotNull List<ECPlayer> recipients) {
+    public PlayerChatEvent(@NotNull ECPlayer player, int type, @NotNull String message, @NotNull List<ECPlayer> recipients) {
         this.player = player;
 
-        this.message = message;
-
         this.type = type;
+
+        this.message = message;
         this.recipients = recipients;
     }
 
