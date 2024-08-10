@@ -24,41 +24,49 @@ public class ECMessagingClientHandler extends ChannelDuplexHandler {
         if (msg instanceof ByteBuf buffer) { // TODO Account for the possibility of split messages
             try {
                 if (buffer.readableBytes() < 1) {
+                    ctx.close();
                     throw new RuntimeException("Invalid message received");
                 }
                 byte protocolVersion = buffer.readByte();
                 if (protocolVersion != PROTOCOL_VERSION) {
+                    ctx.close();
                     throw new RuntimeException("Invalid protocol version");
                 }
 
-                if (buffer.readableBytes() < 1) {
+                if (buffer.readableBytes() < 2) {
+                    ctx.close();
                     throw new RuntimeException("Invalid message received");
                 }
                 short senderLength = buffer.readShort();
 
                 if (buffer.readableBytes() < senderLength) {
+                    ctx.close();
                     throw new RuntimeException("Invalid message received");
                 }
                 byte[] sender = new byte[senderLength];
                 buffer.readBytes(sender);
 
-                if (buffer.readableBytes() < 1) {
+                if (buffer.readableBytes() < 2) {
+                    ctx.close();
                     throw new RuntimeException("Invalid message received");
                 }
                 short recipientLength = buffer.readShort();
 
                 if (buffer.readableBytes() < recipientLength) {
+                    ctx.close();
                     throw new RuntimeException("Invalid message received");
                 }
                 byte[] recipient = new byte[recipientLength];
                 buffer.readBytes(recipient);
 
-                if (buffer.readableBytes() < 1) {
+                if (buffer.readableBytes() < 4) {
+                    ctx.close();
                     throw new RuntimeException("Invalid message received");
                 }
                 int dataLength = buffer.readInt();
 
                 if (buffer.readableBytes() < dataLength) {
+                    ctx.close();
                     throw new RuntimeException("Invalid message received");
                 }
                 byte[] data = new byte[dataLength];
@@ -67,7 +75,17 @@ public class ECMessagingClientHandler extends ChannelDuplexHandler {
                 String[] senderString = new String(sender, StandardCharsets.UTF_8).split(":", 2);
                 String[] recipientString = new String(recipient, StandardCharsets.UTF_8).split(":", 2);
 
-                ctx.fireChannelRead(new ECMessage(ECMessageId.parse(senderString[0], senderString[1]), ECMessageId.parse(recipientString[0], recipientString[1]), data));
+                ECMessageId senderMessageId;
+                ECMessageId recipientMessageId;
+                try {
+                    senderMessageId = ECMessageId.parse(senderString[0], senderString[1]);
+                    recipientMessageId = ECMessageId.parse(recipientString[0], recipientString[1]);
+                } catch (RuntimeException e) {
+                    ctx.close();
+                    throw e;
+                }
+
+                ctx.fireChannelRead(new ECMessage(senderMessageId, recipientMessageId, data));
             } finally {
                 buffer.release();
             }

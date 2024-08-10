@@ -93,12 +93,16 @@ public class ECMessagingClient {
         return this.channel;
     }
 
+    public EventLoopGroup getClientWorker() {
+        return this.clientWorker;
+    }
+
     protected void run() {
         try {
             synchronized (this.statusLock) {
                 this.running = true;
 
-                this.clientWorker = new NioEventLoopGroup(4);
+                this.clientWorker = new NioEventLoopGroup(6);
 
                 this.reconnect(0);
             }
@@ -122,8 +126,8 @@ public class ECMessagingClient {
             bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
                 @Override
                 public void initChannel(@NotNull NioSocketChannel channel) {
-                    channel.pipeline().addLast(new ECMessagingClientHandler(ECMessagingClient.this));
-                    channel.pipeline().addLast(new ECMessagingEventHandler(ECMessagingClient.this));
+                    channel.pipeline().addLast("ECMessagingClientHandler", new ECMessagingClientHandler(ECMessagingClient.this));
+                    channel.pipeline().addLast("ECMessagingEventHandler", new ECMessagingEventHandler(ECMessagingClient.this));
                 }
             });
 
@@ -176,6 +180,10 @@ public class ECMessagingClient {
         }
     }
 
+    public void send(@NotNull ECMessageId from, @NotNull ECMessageId to, byte @NotNull [] data) {
+        this.send(new ECMessage(from, to, data));
+    }
+
     public void send(@NotNull ECMessage message) {
         synchronized (this.statusLock) {
             if (!this.running) {
@@ -184,9 +192,5 @@ public class ECMessagingClient {
         }
 
         this.channel.writeAndFlush(message).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
-    }
-
-    public void send(@NotNull ECMessageId from, @NotNull ECMessageId to, byte @NotNull [] data) {
-        this.send(new ECMessage(from, to, data));
     }
 }

@@ -26,7 +26,7 @@ public class ECMessagingServer {
     protected EventLoopGroup serverWorker;
     protected EventLoopGroup connectionWorker;
     protected ServerChannel channel;
-    protected List<Channel> channelGroup;
+    protected final @NotNull List<Channel> channelGroup = new ArrayList<>();
 
     public ECMessagingServer(@NotNull Logger logger, @NotNull InetSocketAddress address) {
         this.logger = logger;
@@ -87,15 +87,31 @@ public class ECMessagingServer {
         }
     }
 
+    public @NotNull ServerChannel getChannel() {
+        return this.channel;
+    }
+
+    public @NotNull List<Channel> getChannelGroup() {
+        return this.channelGroup;
+    }
+
+    public @NotNull EventLoopGroup getServerWorker() {
+        return this.serverWorker;
+    }
+
+    public @NotNull EventLoopGroup getConnectionWorker() {
+        return this.connectionWorker;
+    }
+
     protected void run() {
         try {
             synchronized (this.statusLock) {
                 this.running = true;
 
-                this.serverWorker = new NioEventLoopGroup(8);
-                this.connectionWorker = new NioEventLoopGroup(64);
+                this.serverWorker = new NioEventLoopGroup(12);
+                this.connectionWorker = new NioEventLoopGroup(128);
 
-                this.channelGroup = new ArrayList<>();
+                this.channelGroup.clear();
 
                 ServerBootstrap bootstrap = new ServerBootstrap();
 
@@ -108,15 +124,19 @@ public class ECMessagingServer {
                     public void initChannel(NioSocketChannel channel) {
                         channel.pipeline().addLast(new ECMessagingServerHandler(ECMessagingServer.this));
 
-                        parent.channelGroup.add(channel);
+                        synchronized (parent.channelGroup) {
+                            parent.channelGroup.add(channel);
+                        }
 
                         channel.closeFuture().addListener((future) -> {
-                            parent.channelGroup.remove(channel);
+                            synchronized (parent.channelGroup) {
+                                parent.channelGroup.remove(channel);
+                            }
                         });
                     }
                 });
 
-                bootstrap.childOption(ChannelOption.TCP_NODELAY, true).option(ChannelOption.SO_BACKLOG, 16).childOption(ChannelOption.SO_KEEPALIVE, true);
+                bootstrap.option(ChannelOption.SO_BACKLOG, 16).childOption(ChannelOption.TCP_NODELAY, true).childOption(ChannelOption.SO_KEEPALIVE, true);
                 bootstrap.validate();
 
                 {
@@ -136,21 +156,5 @@ public class ECMessagingServer {
 
             throw e;
         }
-    }
-
-    public @NotNull EventLoopGroup getServerWorker() {
-        return this.serverWorker;
-    }
-
-    public @NotNull EventLoopGroup getConnectionWorker() {
-        return this.connectionWorker;
-    }
-
-    public @NotNull ServerChannel getChannel() {
-        return this.channel;
-    }
-
-    public @NotNull List<Channel> getChannelGroup() {
-        return this.channelGroup;
     }
 }

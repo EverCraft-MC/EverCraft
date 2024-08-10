@@ -19,6 +19,12 @@ dependencies {
     implementation "org.slf4j:slf4j-simple:${slf4j_version}"
 }
 
+jar {
+    manifest {
+        attributes "Main-Class": "io.github.evercraftmc.messaging.server.ECMessagingServerMain"
+    }
+}
+
 tasks.register("fatJar", Jar) {
     archiveClassifier = "fat"
 

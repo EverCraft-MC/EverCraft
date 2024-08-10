@@ -1,6 +1,5 @@
 package io.github.evercraftmc.messaging.server;
 
-import io.github.kale_ko.bjsl.parsers.YamlParser;
 import io.github.kale_ko.ejcl.file.bjsl.StructuredYamlFileConfig;
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
@@ -21,17 +20,17 @@ public class ECMessagingServerMain {
         try {
             logger.info("Loading config...");
 
-            StructuredYamlFileConfig<MessagingDetails> messagingDetails = new StructuredYamlFileConfig<>(MessagingDetails.class, Path.of("messaging.yml").toFile(), new YamlParser.Builder().build());
+            StructuredYamlFileConfig<MessagingDetails> messagingDetails = new StructuredYamlFileConfig<>(MessagingDetails.class, Path.of("messaging.yml").toFile());
             messagingDetails.load(true);
 
             ECMessagingServer server = new ECMessagingServer(logger, new InetSocketAddress(messagingDetails.get().host, messagingDetails.get().port));
             server.start();
 
             {
-                Scanner stdIn = new Scanner(System.in);
+                Scanner stdin = new Scanner(System.in);
 
                 while (true) {
-                    String read = stdIn.nextLine();
+                    String read = stdin.nextLine();
 
                     if (read.equalsIgnoreCase("q") || read.equalsIgnoreCase("quit")) {
                         server.stop();
@@ -40,7 +39,7 @@ public class ECMessagingServerMain {
                 }
             }
         } catch (Exception e) {
-            logger.error("", e);
+            logger.error("Exception in program", e);
         }
     }
 }
