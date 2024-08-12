@@ -7,6 +7,7 @@ import io.github.evercraftmc.core.api.events.ECListener;
 import io.github.evercraftmc.core.api.events.player.PlayerJoinEvent;
 import io.github.evercraftmc.core.api.server.ECServer;
 import io.github.evercraftmc.core.impl.ECEnvironment;
+import io.github.evercraftmc.core.impl.ECEnvironmentType;
 import io.github.evercraftmc.core.messaging.ECMessenger;
 import io.github.kale_ko.bjsl.BJSL;
 import io.github.kale_ko.bjsl.elements.ParsedObject;
@@ -16,7 +17,6 @@ import io.github.kale_ko.ejcl.file.bjsl.StructuredYamlFileConfig;
 import io.github.kale_ko.ejcl.mysql.StructuredMySQLConfig;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -146,7 +146,7 @@ public class ECPlugin {
 
             String response;
             try (HttpClient httpClient = HttpClient.newBuilder().build()) {
-                HttpRequest httpRequest = HttpRequest.newBuilder(new URI("https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/" + this.getServer().getMinecraftVersion() + "/assets/minecraft/lang/en_us.json")).GET().build();
+                HttpRequest httpRequest = HttpRequest.newBuilder(new URI("https://raw.githubusercontent.com/Kale-Ko/minecraft-assets/" + this.getServer().getMinecraftVersion() + "/assets/minecraft/lang/en_us.json")).GET().build();
                 response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString()).body();
             }
 
@@ -169,7 +169,7 @@ public class ECPlugin {
                 for (Path file : files) {
                     ECModuleInfo moduleInfo = null;
 
-                    try (JarInputStream jar = new JarInputStream(new BufferedInputStream(new FileInputStream(file.toFile())))) {
+                    try (JarInputStream jar = new JarInputStream(new BufferedInputStream(Files.newInputStream(file)))) {
                         ZipEntry entry;
                         while ((entry = jar.getNextEntry()) != null) {
                             if (entry.getName().equalsIgnoreCase("evercraft.yml")) {
@@ -244,18 +244,17 @@ public class ECPlugin {
         }
 
         try {
-            ECModuleClassLoader moduleClassLoader = new ECModuleClassLoader(this.classLoader, file.toFile());
+            ECModuleClassLoader moduleClassLoader = new ECModuleClassLoader(file);
+            moduleClassLoader.catalogAll();
             Class<?> moduleClass = moduleClassLoader.loadClass(moduleInfo.getEntry());
 
             if (ECModule.class.isAssignableFrom(moduleClass)) {
                 ECModule module = null;
-                for (Constructor<?> constructor : moduleClass.getConstructors()) {
-                    if (constructor.getParameterCount() == 0) {
+                for (Constructor<?> constructor : moduleClass.getDeclaredConstructors()) {
+                    if (constructor.getParameterCount() == 2 && constructor.getParameterTypes()[0] == ECPlugin.class && constructor.getParameterTypes()[1] == ECModuleInfo.class) {
                         try {
-                            module = (ECModule) constructor.newInstance();
-                            module.setPlugin(this);
-                            module.setInfo(moduleInfo);
-
+                            constructor.setAccessible(true);
+                            module = (ECModule) constructor.newInstance(this, moduleInfo);
                             break;
                         } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | InvocationTargetException ignored) {
                         }
@@ -278,11 +277,13 @@ public class ECPlugin {
                         this.logger.error("Error loading module \"" + file.getFileName() + "\"", e);
                     }
                 } else {
-                    this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Entry class has no 0 args constructor");
+                    this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Entry class has no matching constructor");
                 }
             } else {
                 this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Entry class does not extend ECModule");
             }
+        } catch (IOException e) {
+            this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Failed to load module (\"" + moduleInfo.getEntry() + "\")");
         } catch (ClassNotFoundException e) {
             this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Entry class could not be found (\"" + moduleInfo.getEntry() + "\")");
         }
@@ -335,6 +336,10 @@ public class ECPlugin {
 
     public @NotNull ECEnvironment getEnvironment() {
         return this.environment;
+    }
+
+    public @NotNull ECEnvironmentType getEnvironmentType() {
+        return this.environment.getType();
     }
 
     public ECServer getServer() {

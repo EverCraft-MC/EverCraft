@@ -49,7 +49,7 @@ public class ECPluginManager {
 
             return module;
         } else {
-            throw new RuntimeException("Module \"" + module.getClass().getSimpleName() + "\" is not registered");
+            throw new RuntimeException("Module \"" + module.getClass().getSimpleName() + "\" is already registered");
         }
     }
 

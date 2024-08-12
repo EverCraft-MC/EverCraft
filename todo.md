@@ -3,6 +3,7 @@
 ## Both
 
 - Sudo
+- Convert to using new text format
 
 ## Either
 
