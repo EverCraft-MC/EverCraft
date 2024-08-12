@@ -5,6 +5,7 @@ import io.github.evercraftmc.core.api.events.ECHandler;
 import io.github.evercraftmc.core.api.events.ECListener;
 import io.github.evercraftmc.core.api.events.messaging.MessageEvent;
 import io.github.evercraftmc.core.api.server.ECCommandManager;
+import io.github.evercraftmc.core.api.server.player.ECConsole;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
 import io.github.evercraftmc.core.impl.ECEnvironmentType;
 import io.github.evercraftmc.core.impl.util.ECComponentFormatter;
@@ -16,6 +17,7 @@ import java.io.*;
 import java.util.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.jetbrains.annotations.NotNull;
@@ -43,7 +45,7 @@ public class ECPaperCommandManager implements ECCommandManager {
         @Override
         public boolean execute(@NotNull CommandSender sender, @NotNull String label, @NotNull String @NotNull [] args) {
             if (sender instanceof Player paperPlayer) {
-                if (this.getPermission() == null || sender.hasPermission(this.getPermission()) || sender.isOp()) {
+                if (this.testPermissionSilent(paperPlayer)) {
                     try {
                         this.command.run(parent.server.getOnlinePlayer(paperPlayer.getUniqueId()), Arrays.asList(args), true);
                     } catch (Exception e) {
@@ -57,6 +59,7 @@ public class ECPaperCommandManager implements ECCommandManager {
                             ByteArrayOutputStream commandMessageData = new ByteArrayOutputStream();
                             DataOutputStream commandMessage = new DataOutputStream(commandMessageData);
                             commandMessage.writeInt(ECMessageType.GLOBAL_COMMAND);
+                            commandMessage.writeBoolean(false);
                             commandMessage.writeUTF(paperPlayer.getUniqueId().toString());
                             commandMessage.writeUTF(this.getName());
                             commandMessage.writeInt(args.length);
@@ -73,8 +76,33 @@ public class ECPaperCommandManager implements ECCommandManager {
                 } else {
                     sender.sendMessage(ECComponentFormatter.stringToComponent(ECTextFormatter.translateColors("&cYou do not have permission to run that command")));
                 }
-            } else {
-                this.command.run(parent.server.getConsole(), Arrays.asList(args), true);
+            } else if (sender instanceof ConsoleCommandSender) {
+                try {
+                    this.command.run(parent.server.getConsole(), Arrays.asList(args), true);
+                } catch (Exception e) {
+                    parent.getServer().getPlugin().getLogger().error("Error while running command {}.", label, e);
+
+                    return false;
+                }
+
+                if (this.forwardToOther) {
+                    try {
+                        ByteArrayOutputStream commandMessageData = new ByteArrayOutputStream();
+                        DataOutputStream commandMessage = new DataOutputStream(commandMessageData);
+                        commandMessage.writeInt(ECMessageType.GLOBAL_COMMAND);
+                        commandMessage.writeBoolean(true);
+                        commandMessage.writeUTF(this.getName());
+                        commandMessage.writeInt(args.length);
+                        for (String arg : args) {
+                            commandMessage.writeUTF(arg);
+                        }
+                        commandMessage.close();
+
+                        parent.server.getPlugin().getMessenger().send(new ECEnvironmentTypeMessageId(ECEnvironmentType.PROXY), commandMessageData.toByteArray());
+                    } catch (IOException e) {
+                        parent.server.getPlugin().getLogger().error("[Messenger] Failed to send message", e);
+                    }
+                }
             }
 
             return true;
@@ -83,7 +111,7 @@ public class ECPaperCommandManager implements ECCommandManager {
         @Override
         public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
             if (sender instanceof Player paperPlayer) {
-                if (this.getPermission() == null || sender.hasPermission(this.getPermission()) || sender.isOp()) {
+                if (this.testPermissionSilent(paperPlayer)) {
                     try {
                         return this.command.tabComplete(parent.server.getOnlinePlayer(paperPlayer.getUniqueId()), Arrays.asList(args));
                     } catch (Exception e) {
@@ -94,7 +122,7 @@ public class ECPaperCommandManager implements ECCommandManager {
                 } else {
                     return List.of();
                 }
-            } else {
+            } else if (sender instanceof ConsoleCommandSender) {
                 try {
                     return this.command.tabComplete(parent.server.getConsole(), Arrays.asList(args));
                 } catch (Exception e) {
@@ -103,6 +131,8 @@ public class ECPaperCommandManager implements ECCommandManager {
                     return List.of();
                 }
             }
+
+            return List.of();
         }
 
         @Override
@@ -113,11 +143,8 @@ public class ECPaperCommandManager implements ECCommandManager {
         private static @NotNull List<String> alias(@NotNull String uName, @NotNull List<String> uAliases, boolean distinguishServer) {
             ArrayList<String> aliases = new ArrayList<>();
 
-            aliases.add("evercraft:" + (distinguishServer ? "b" : "") + uName.toLowerCase());
-
             for (String alias : uAliases) {
                 aliases.add((distinguishServer ? "b" : "") + alias.toLowerCase());
-                aliases.add("evercraft:" + (distinguishServer ? "b" : "") + alias.toLowerCase());
             }
 
             return aliases;
@@ -146,16 +173,35 @@ public class ECPaperCommandManager implements ECCommandManager {
 
                         int type = commandMessage.readInt();
                         if (type == ECMessageType.GLOBAL_COMMAND) {
-                            UUID uuid = UUID.fromString(commandMessage.readUTF());
-                            String command = commandMessage.readUTF();
-                            List<String> args = new ArrayList<>();
-                            int argC = commandMessage.readInt();
-                            for (int i = 0; i < argC; i++) {
-                                args.add(commandMessage.readUTF());
-                            }
+                            if (!commandMessage.readBoolean()) {
+                                UUID uuid = UUID.fromString(commandMessage.readUTF());
+                                String command = commandMessage.readUTF();
+                                List<String> args = new ArrayList<>();
+                                int argC = commandMessage.readInt();
+                                for (int i = 0; i < argC; i++) {
+                                    args.add(commandMessage.readUTF());
+                                }
 
-                            ECPlayer player = parent.server.getOnlinePlayer(uuid);
-                            if (player != null) {
+                                ECPlayer player = parent.server.getOnlinePlayer(uuid);
+                                if (player != null) {
+                                    ECCommand ecCommand = parent.server.getCommandManager().get(command);
+                                    if (ecCommand != null) {
+                                        try {
+                                            ecCommand.run(player, args, false);
+                                        } catch (Exception e) {
+                                            parent.getServer().getPlugin().getLogger().error("Error while running command {}.", command, e);
+                                        }
+                                    }
+                                }
+                            } else {
+                                String command = commandMessage.readUTF();
+                                List<String> args = new ArrayList<>();
+                                int argC = commandMessage.readInt();
+                                for (int i = 0; i < argC; i++) {
+                                    args.add(commandMessage.readUTF());
+                                }
+
+                                ECConsole player = parent.server.getConsole();
                                 ECCommand ecCommand = parent.server.getCommandManager().get(command);
                                 if (ecCommand != null) {
                                     try {
@@ -228,8 +274,8 @@ public class ECPaperCommandManager implements ECCommandManager {
         if (this.commands.containsKey(command.getName().toLowerCase())) {
             this.interCommands.get(command.getName().toLowerCase()).unregister(this.server.getHandle().getCommandMap());
 
-            this.commands.remove(command.getName().toLowerCase());
             this.interCommands.remove(command.getName().toLowerCase());
+            this.commands.remove(command.getName().toLowerCase());
 
             return command;
         } else {

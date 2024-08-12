@@ -3,12 +3,14 @@ package io.github.evercraftmc.core.impl.velocity.server;
 import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
+import com.velocitypowered.api.proxy.ConsoleCommandSource;
 import com.velocitypowered.api.proxy.Player;
 import io.github.evercraftmc.core.api.commands.ECCommand;
 import io.github.evercraftmc.core.api.events.ECHandler;
 import io.github.evercraftmc.core.api.events.ECListener;
 import io.github.evercraftmc.core.api.events.messaging.MessageEvent;
 import io.github.evercraftmc.core.api.server.ECCommandManager;
+import io.github.evercraftmc.core.api.server.player.ECConsole;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
 import io.github.evercraftmc.core.impl.ECEnvironmentType;
 import io.github.evercraftmc.core.impl.util.ECComponentFormatter;
@@ -40,7 +42,7 @@ public class ECVelocityCommandManager implements ECCommandManager {
             List<String> args = new ArrayList<>(Arrays.asList(invocation.arguments()));
 
             if (sender instanceof Player velocityPlayer) {
-                if (this.command.getPermission() == null || sender.hasPermission(this.command.getPermission())) {
+                if (this.hasPermission(invocation)) {
                     try {
                         this.command.run(parent.server.getOnlinePlayer(velocityPlayer.getUniqueId()), args, true);
                     } catch (Exception e) {
@@ -54,6 +56,7 @@ public class ECVelocityCommandManager implements ECCommandManager {
                             ByteArrayOutputStream commandMessageData = new ByteArrayOutputStream();
                             DataOutputStream commandMessage = new DataOutputStream(commandMessageData);
                             commandMessage.writeInt(ECMessageType.GLOBAL_COMMAND);
+                            commandMessage.writeBoolean(false);
                             commandMessage.writeUTF(velocityPlayer.getUniqueId().toString());
                             commandMessage.writeUTF(this.command.getName());
                             commandMessage.writeInt(args.size());
@@ -70,8 +73,33 @@ public class ECVelocityCommandManager implements ECCommandManager {
                 } else {
                     sender.sendMessage(ECComponentFormatter.stringToComponent(ECTextFormatter.translateColors("&cYou do not have permission to run that command")));
                 }
-            } else {
-                this.command.run(parent.server.getConsole(), args, true);
+            } else if (sender instanceof ConsoleCommandSource) {
+                try {
+                    this.command.run(parent.server.getConsole(), args, true);
+                } catch (Exception e) {
+                    parent.getServer().getPlugin().getLogger().error("Error while running command {}.", label, e);
+
+                    return;
+                }
+
+                if (this.forwardToOther) {
+                    try {
+                        ByteArrayOutputStream commandMessageData = new ByteArrayOutputStream();
+                        DataOutputStream commandMessage = new DataOutputStream(commandMessageData);
+                        commandMessage.writeInt(ECMessageType.GLOBAL_COMMAND);
+                        commandMessage.writeBoolean(true);
+                        commandMessage.writeUTF(this.command.getName());
+                        commandMessage.writeInt(args.size());
+                        for (String arg : args) {
+                            commandMessage.writeUTF(arg);
+                        }
+                        commandMessage.close();
+
+                        parent.server.getPlugin().getMessenger().send(new ECEnvironmentTypeMessageId(ECEnvironmentType.BACKEND), commandMessageData.toByteArray());
+                    } catch (IOException e) {
+                        parent.server.getPlugin().getLogger().error("[Messenger] Failed to send message", e);
+                    }
+                }
             }
         }
 
@@ -83,7 +111,7 @@ public class ECVelocityCommandManager implements ECCommandManager {
             args.add(0, label);
 
             if (sender instanceof Player velocityPlayer) {
-                if (this.command.getPermission() == null || sender.hasPermission(this.command.getPermission())) {
+                if (this.hasPermission(invocation)) {
                     try {
                         return this.command.tabComplete(parent.server.getOnlinePlayer(velocityPlayer.getUniqueId()), args);
                     } catch (Exception e) {
@@ -94,7 +122,7 @@ public class ECVelocityCommandManager implements ECCommandManager {
                 } else {
                     return List.of();
                 }
-            } else {
+            } else if (sender instanceof ConsoleCommandSource) {
                 try {
                     return this.command.tabComplete(parent.server.getConsole(), args);
                 } catch (Exception e) {
@@ -103,6 +131,8 @@ public class ECVelocityCommandManager implements ECCommandManager {
                     return List.of();
                 }
             }
+
+            return List.of();
         }
 
         @Override
@@ -144,16 +174,35 @@ public class ECVelocityCommandManager implements ECCommandManager {
 
                         int type = commandMessage.readInt();
                         if (type == ECMessageType.GLOBAL_COMMAND) {
-                            UUID uuid = UUID.fromString(commandMessage.readUTF());
-                            String command = commandMessage.readUTF();
-                            List<String> args = new ArrayList<>();
-                            int argC = commandMessage.readInt();
-                            for (int i = 0; i < argC; i++) {
-                                args.add(commandMessage.readUTF());
-                            }
+                            if (!commandMessage.readBoolean()) {
+                                UUID uuid = UUID.fromString(commandMessage.readUTF());
+                                String command = commandMessage.readUTF();
+                                List<String> args = new ArrayList<>();
+                                int argC = commandMessage.readInt();
+                                for (int i = 0; i < argC; i++) {
+                                    args.add(commandMessage.readUTF());
+                                }
 
-                            ECPlayer player = parent.server.getOnlinePlayer(uuid);
-                            if (player != null) {
+                                ECPlayer player = parent.server.getOnlinePlayer(uuid);
+                                if (player != null) {
+                                    ECCommand ecCommand = parent.server.getCommandManager().get(command);
+                                    if (ecCommand != null) {
+                                        try {
+                                            ecCommand.run(player, args, false);
+                                        } catch (Exception e) {
+                                            parent.getServer().getPlugin().getLogger().error("Error while running command {}.", command, e);
+                                        }
+                                    }
+                                }
+                            } else {
+                                String command = commandMessage.readUTF();
+                                List<String> args = new ArrayList<>();
+                                int argC = commandMessage.readInt();
+                                for (int i = 0; i < argC; i++) {
+                                    args.add(commandMessage.readUTF());
+                                }
+
+                                ECConsole player = parent.server.getConsole();
                                 ECCommand ecCommand = parent.server.getCommandManager().get(command);
                                 if (ecCommand != null) {
                                     try {
@@ -230,8 +279,8 @@ public class ECVelocityCommandManager implements ECCommandManager {
         if (this.commands.containsKey(command.getName().toLowerCase())) {
             this.server.getHandle().getCommandManager().unregister(command.getName().toLowerCase());
 
-            this.commands.remove(command.getName().toLowerCase());
             this.interCommands.remove(command.getName().toLowerCase());
+            this.commands.remove(command.getName().toLowerCase());
 
             return command;
         } else {
