@@ -30,9 +30,7 @@ tasks.register("fatJar", Jar) {
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from(sourceSets.main.output)
-    from(configurations.runtimeClasspath.collect {
-        it.isDirectory() ? null : zipTree(it)
-    })
+    from(configurations.runtimeClasspath)
 }
 
 build {
