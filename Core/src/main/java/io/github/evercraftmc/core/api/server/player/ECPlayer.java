@@ -15,6 +15,8 @@ public interface ECPlayer {
 
     public void setDisplayName(@NotNull String displayName);
 
+    public boolean isOnline();
+
     public @NotNull String getOnlineDisplayName();
 
     public void setOnlineDisplayName(@NotNull String displayName);

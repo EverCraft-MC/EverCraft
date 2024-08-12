@@ -45,6 +45,6 @@ public class ECVelocityScheduler implements ECScheduler {
 
     @Override
     public @NotNull ECVelocityScheduler.ECVelocityTask runTaskRepeat(@NotNull Runnable task, int delay, int ticks) {
-        return new ECVelocityScheduler.ECVelocityTask(this.server.getHandle().getScheduler().buildTask(this.server.getPlugin().getHandle(), task).delay(delay * 50L, TimeUnit.MILLISECONDS).delay(ticks * 50L, TimeUnit.MILLISECONDS).schedule());
+        return new ECVelocityScheduler.ECVelocityTask(this.server.getHandle().getScheduler().buildTask(this.server.getPlugin().getHandle(), task).delay(delay * 50L, TimeUnit.MILLISECONDS).repeat(ticks * 50L, TimeUnit.MILLISECONDS).schedule());
     }
 }

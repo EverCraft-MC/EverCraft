@@ -19,11 +19,11 @@ public class ServerChoiceListener implements ECListener {
 
     @ECHandler(order=ECHandlerOrder.BEFORE)
     public void onPlayerJoin(@NotNull PlayerProxyJoinEvent event) {
-        String server = ((ECProxyServer) parent.getPlugin().getServer()).getDefaultServer();
+        String server = ((ECProxyServer) parent.getPlugin().getServer()).getDefaultServer().name();
 
         if (event.getPlayer().getServerAddress() != null) {
             String[] address = event.getPlayer().getServerAddress().getHostString().split("\\.");
-            if (address.length > 2 && !address[0].equalsIgnoreCase(((ECProxyServer) parent.getPlugin().getServer()).getFallbackServer()) && ((ECProxyServer) parent.getPlugin().getServer()).getServer(address[0].toLowerCase()) != null) {
+            if (address.length > 2 && !address[0].equalsIgnoreCase(((ECProxyServer) parent.getPlugin().getServer()).getFallbackServer().name()) && ((ECProxyServer) parent.getPlugin().getServer()).getServer(address[0].toLowerCase()) != null) {
                 server = address[0].toLowerCase();
             }
         }

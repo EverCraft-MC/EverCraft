@@ -87,7 +87,7 @@ public class ECPaperServer implements ECServer {
 
     @Override
     public ECPaperPlayer getPlayer(@NotNull String name) {
-        for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) {
+        for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) { // TODO Name -> UUID map
             if (player.name.equalsIgnoreCase(name)) {
                 return new ECPaperPlayer(player);
             }
@@ -123,7 +123,7 @@ public class ECPaperServer implements ECServer {
     public ECPaperPlayer getOnlinePlayer(@NotNull String name) {
         Player paperPlayer = this.handle.getPlayer(name);
         if (paperPlayer != null) {
-            for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) {
+            for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) { // TODO Name -> UUID map
                 if (player.name.equalsIgnoreCase(name)) {
                     return new ECPaperPlayer(player, this, paperPlayer);
                 }

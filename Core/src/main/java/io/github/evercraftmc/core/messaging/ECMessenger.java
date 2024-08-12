@@ -56,10 +56,6 @@ public class ECMessenger {
         }
     }
 
-    public void send(byte @NotNull [] data) {
-        this.client.send(new ECUUIDMessageId(this.id), new ECAllMessageId(), data);
-    }
-
     public void send(@NotNull ECMessageId receiver, byte @NotNull [] data) {
         this.client.send(new ECUUIDMessageId(this.id), receiver, data);
     }

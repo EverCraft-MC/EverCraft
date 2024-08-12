@@ -1,6 +1,8 @@
 package io.github.evercraftmc.moderation;
 
+import io.github.evercraftmc.core.ECPlugin;
 import io.github.evercraftmc.core.api.ECModule;
+import io.github.evercraftmc.core.api.ECModuleInfo;
 import io.github.evercraftmc.core.api.commands.ECCommand;
 import io.github.evercraftmc.core.api.events.ECListener;
 import io.github.evercraftmc.moderation.commands.*;
@@ -12,6 +14,10 @@ import org.jetbrains.annotations.NotNull;
 public class ModerationModule extends ECModule {
     protected final @NotNull List<ECCommand> commands = new ArrayList<>();
     protected final @NotNull List<ECListener> listeners = new ArrayList<>();
+
+    protected ModerationModule(@NotNull ECPlugin plugin, @NotNull ECModuleInfo info) {
+        super(plugin, info);
+    }
 
     public void load() {
         this.commands.add(this.getPlugin().getServer().getCommandManager().register(new KickCommand(this), false, false));

@@ -93,7 +93,7 @@ public class ECVelocityServer implements ECProxyServer {
 
     @Override
     public ECVelocityPlayer getPlayer(@NotNull String name) {
-        for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) {
+        for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) { // TODO Name -> UUID map
             if (player.name.equalsIgnoreCase(name)) {
                 return new ECVelocityPlayer(player);
             }
@@ -129,7 +129,7 @@ public class ECVelocityServer implements ECProxyServer {
     public ECVelocityPlayer getOnlinePlayer(@NotNull String name) {
         Optional<Player> velocityPlayer = this.handle.getPlayer(name);
         if (velocityPlayer.isPresent()) {
-            for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) {
+            for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) { // TODO Name -> UUID map
                 if (player.name.equalsIgnoreCase(name)) {
                     return new ECVelocityPlayer(player, this, velocityPlayer.get());
                 }
@@ -137,16 +137,6 @@ public class ECVelocityServer implements ECProxyServer {
         }
 
         return null;
-    }
-
-    @Override
-    public @NotNull String getDefaultServer() {
-        return this.handle.getConfiguration().getAttemptConnectionOrder().get(0);
-    }
-
-    @Override
-    public @NotNull String getFallbackServer() {
-        return this.handle.getConfiguration().getAttemptConnectionOrder().get(this.handle.getConfiguration().getAttemptConnectionOrder().size() - 1);
     }
 
     @Override
@@ -168,6 +158,24 @@ public class ECVelocityServer implements ECProxyServer {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public @NotNull Server getDefaultServer() {
+        Server server = this.getServer(this.handle.getConfiguration().getAttemptConnectionOrder().get(0));
+        if (server == null) {
+            throw new NullPointerException("defaultServer");
+        }
+        return server;
+    }
+
+    @Override
+    public @NotNull Server getFallbackServer() {
+        Server server = this.getServer(this.handle.getConfiguration().getAttemptConnectionOrder().get(this.handle.getConfiguration().getAttemptConnectionOrder().size() - 1));
+        if (server == null) {
+            throw new NullPointerException("fallbackServer");
+        }
+        return server;
     }
 
     @Override

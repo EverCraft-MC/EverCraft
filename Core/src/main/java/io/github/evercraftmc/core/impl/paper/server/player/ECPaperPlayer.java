@@ -25,7 +25,7 @@ public class ECPaperPlayer implements ECPlayer {
         this.uuid = data.uuid;
         this.name = data.name;
 
-        this.displayName = ECTextFormatter.translateColors((data.prefix != null ? data.prefix + "&r " : "&r") + data.displayName + "&r");
+        this.displayName = ECTextFormatter.translateColors((data.prefix != null ? "&r" + data.prefix + "&r " : "&r") + data.displayName + "&r");
 
         this.parent = null;
         this.handle = null;
@@ -35,7 +35,7 @@ public class ECPaperPlayer implements ECPlayer {
         this.uuid = data.uuid;
         this.name = data.name;
 
-        this.displayName = ECTextFormatter.translateColors((data.prefix != null ? data.prefix + "&r " : "&r") + data.displayName + "&r");
+        this.displayName = ECTextFormatter.translateColors((data.prefix != null ? "&r" + data.prefix + "&r " : "&r") + data.displayName + "&r");
 
         this.parent = parent;
         this.handle = handle;
@@ -63,6 +63,11 @@ public class ECPaperPlayer implements ECPlayer {
     @Override
     public void setDisplayName(@NotNull String displayName) {
         this.displayName = displayName;
+    }
+
+    @Override
+    public boolean isOnline() {
+        return this.handle != null;
     }
 
     @Override

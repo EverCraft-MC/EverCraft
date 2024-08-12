@@ -29,6 +29,11 @@ public interface ECConsole extends ECPlayer {
     }
 
     @Override
+    public default boolean isOnline() {
+        return true;
+    }
+
+    @Override
     public default @NotNull String getOnlineDisplayName() {
         return ECTextFormatter.translateColors("&l&4Console");
     }

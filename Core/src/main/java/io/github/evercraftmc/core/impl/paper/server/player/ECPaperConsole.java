@@ -2,17 +2,17 @@ package io.github.evercraftmc.core.impl.paper.server.player;
 
 import io.github.evercraftmc.core.api.server.player.ECConsole;
 import io.github.evercraftmc.core.impl.util.ECComponentFormatter;
-import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.jetbrains.annotations.NotNull;
 
 public class ECPaperConsole implements ECConsole {
-    protected final @NotNull CommandSender handle;
+    protected final @NotNull ConsoleCommandSender handle;
 
-    public ECPaperConsole(@NotNull CommandSender handle) {
+    public ECPaperConsole(@NotNull ConsoleCommandSender handle) {
         this.handle = handle;
     }
 
-    public @NotNull CommandSender getHandle() {
+    public @NotNull ConsoleCommandSender getHandle() {
         return this.handle;
     }
 
