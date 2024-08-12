@@ -1,7 +1,9 @@
 package io.github.evercraftmc.core.impl.velocity.server;
 
+import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.ResultedEvent;
 import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.command.CommandExecuteEvent;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.LoginEvent;
 import com.velocitypowered.api.event.connection.PostLoginEvent;
@@ -9,6 +11,7 @@ import com.velocitypowered.api.event.connection.PreLoginEvent;
 import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import com.velocitypowered.api.event.player.ServerPreConnectEvent;
 import com.velocitypowered.api.event.proxy.ProxyPingEvent;
+import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.ServerPing;
 import io.github.evercraftmc.core.ECPlayerData;
 import io.github.evercraftmc.core.api.events.ECEvent;
@@ -75,7 +78,7 @@ public class ECVelocityEventManager implements ECEventManager {
             this.setupPacketListener();
         }
 
-        @Subscribe
+        @Subscribe(order=PostOrder.LATE)
         public void onPlayerPreConnect(@NotNull PreLoginEvent event) {
             InetAddress ip = event.getConnection().getRemoteAddress().getAddress();
             if (allowedIps.containsKey(ip) && allowedIps.get(ip).matcher(event.getUsername()).matches()) {
@@ -83,7 +86,7 @@ public class ECVelocityEventManager implements ECEventManager {
             }
         }
 
-        @Subscribe
+        @Subscribe(order=PostOrder.LATE)
         public void onPlayerConnect(@NotNull LoginEvent event) {
             String uuid = event.getPlayer().getUniqueId().toString();
             if (!parent.server.getPlugin().getPlayerData().players.containsKey(uuid)) {
@@ -98,7 +101,7 @@ public class ECVelocityEventManager implements ECEventManager {
             }
         }
 
-        @Subscribe
+        @Subscribe(order=PostOrder.LATE)
         public void onPlayerJoin(@NotNull PostLoginEvent event) {
             PlayerJoinEvent newEvent = new PlayerJoinEvent(new ECVelocityPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), "");
             parent.emit(newEvent);
@@ -110,7 +113,7 @@ public class ECVelocityEventManager implements ECEventManager {
             }
         }
 
-        @Subscribe
+        @Subscribe(order=PostOrder.LATE)
         public void onPlayerLeave(@NotNull DisconnectEvent event) {
             PlayerLeaveEvent newEvent = new PlayerLeaveEvent(new ECVelocityPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), "");
             parent.emit(newEvent);
@@ -120,7 +123,7 @@ public class ECVelocityEventManager implements ECEventManager {
             }
         }
 
-        @Subscribe
+        @Subscribe(order=PostOrder.LATE)
         public void onPlayerServerConnect(@NotNull ServerPreConnectEvent event) {
             if (event.getPreviousServer() == null) {
                 PlayerProxyJoinEvent newEvent = new PlayerProxyJoinEvent(new ECVelocityPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), "", event.getResult().getServer().orElseThrow().getServerInfo().getName());
@@ -147,7 +150,7 @@ public class ECVelocityEventManager implements ECEventManager {
             }
         }
 
-        @Subscribe
+        @Subscribe(order=PostOrder.LATE)
         public void onPlayerServerConnect(@NotNull ServerConnectedEvent event) {
             PlayerServerConnectedEvent newEvent = new PlayerServerConnectedEvent(new ECVelocityPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), event.getServer().getServerInfo().getName(), "");
             parent.emit(newEvent);
@@ -157,7 +160,7 @@ public class ECVelocityEventManager implements ECEventManager {
             }
         }
 
-        @Subscribe
+        @Subscribe(order=PostOrder.LATE)
         public void onPlayerServerConnect(@NotNull ProxyPingEvent event) {
             Map<UUID, String> players = new HashMap<>();
 
@@ -196,8 +199,8 @@ public class ECVelocityEventManager implements ECEventManager {
             event.setPing(serverPing.build());
         }
 
-        @Subscribe
-        public void onPlayerChat(@NotNull com.velocitypowered.api.event.player.PlayerChatEvent event) { // TODO Check if this includes commands
+        @Subscribe(order=PostOrder.LATE)
+        public void onPlayerChat(@NotNull com.velocitypowered.api.event.player.PlayerChatEvent event) {
             String message = event.getMessage();
             if (message.isEmpty() || message.equalsIgnoreCase("/")) {
                 event.setResult(com.velocitypowered.api.event.player.PlayerChatEvent.ChatResult.denied());
@@ -206,31 +209,45 @@ public class ECVelocityEventManager implements ECEventManager {
 
             ECVelocityPlayer player = parent.server.getOnlinePlayer(event.getPlayer().getUniqueId());
 
-            if (message.charAt(0) != '/') {
-                PlayerChatEvent newEvent = new PlayerChatEvent(player, PlayerChatEvent.MessageType.CHAT, message, new ArrayList<>());
-                parent.emit(newEvent);
+            PlayerChatEvent newEvent = new PlayerChatEvent(player, PlayerChatEvent.MessageType.CHAT, message, new ArrayList<>());
+            parent.emit(newEvent);
 
-                event.setResult(com.velocitypowered.api.event.player.PlayerChatEvent.ChatResult.denied());
+            event.setResult(com.velocitypowered.api.event.player.PlayerChatEvent.ChatResult.denied());
 
-                if (newEvent.isCancelled()) {
-                    if (!newEvent.getCancelReason().isEmpty()) {
-                        player.sendMessage(newEvent.getCancelReason());
-                    }
-                } else if (!newEvent.getMessage().isEmpty()) {
-                    for (ECPlayer player2 : (!newEvent.getRecipients().isEmpty() ? newEvent.getRecipients() : parent.getServer().getOnlinePlayers())) {
-                        if (player.getServer() == null || !(player2 instanceof ECProxyPlayer proxyPlayer2 && player.getServer().equals(proxyPlayer2.getServer()))) {
-                            player2.sendMessage(ECTextFormatter.translateColors("&r[" + player.getServer().name().substring(0, 1).toUpperCase() + player.getServer().name().substring(1).toLowerCase() + "&r] " + newEvent.getMessage()));
-                        } else {
-                            player2.sendMessage(ECTextFormatter.translateColors("&r" + newEvent.getMessage()));
-                        }
+            if (newEvent.isCancelled()) {
+                if (!newEvent.getCancelReason().isEmpty()) {
+                    player.sendMessage(newEvent.getCancelReason());
+                }
+            } else if (!newEvent.getMessage().isEmpty()) {
+                for (ECPlayer player2 : (!newEvent.getRecipients().isEmpty() ? newEvent.getRecipients() : parent.getServer().getOnlinePlayers())) {
+                    if (player.getServer() == null || !(player2 instanceof ECProxyPlayer proxyPlayer2 && player.getServer().equals(proxyPlayer2.getServer()))) {
+                        player2.sendMessage(ECTextFormatter.translateColors("&r[" + player.getServer().name().substring(0, 1).toUpperCase() + player.getServer().name().substring(1).toLowerCase() + "&r] " + newEvent.getMessage()));
+                    } else {
+                        player2.sendMessage(ECTextFormatter.translateColors("&r" + newEvent.getMessage()));
                     }
                 }
-            } else {
+            }
+        }
+
+        @Subscribe(order=PostOrder.LATE)
+        public void onPlayerCommand(@NotNull CommandExecuteEvent event) {
+            String message = event.getCommand();
+            if (message.isEmpty() || message.equalsIgnoreCase("/")) {
+                event.setResult(CommandExecuteEvent.CommandResult.denied());
+                return;
+            }
+            if (event.getResult().isForwardToServer()) {
+                return;
+            }
+
+            if (event.getCommandSource() instanceof Player velocityPlayer) {
+                ECVelocityPlayer player = parent.server.getOnlinePlayer(velocityPlayer.getUniqueId());
+
                 PlayerCommandEvent newEvent = new PlayerCommandEvent(player, message);
                 parent.emit(newEvent);
 
                 if (newEvent.isCancelled()) {
-                    event.setResult(com.velocitypowered.api.event.player.PlayerChatEvent.ChatResult.denied());
+                    event.setResult(CommandExecuteEvent.CommandResult.denied());
 
                     if (!newEvent.getCancelReason().isEmpty()) {
                         player.sendMessage(newEvent.getCancelReason());
@@ -384,13 +401,17 @@ public class ECVelocityEventManager implements ECEventManager {
         this.server.getHandle().getEventManager().register(this.server.getPlugin().getHandle(), listener);
 
         for (Method method : listener.getClass().getDeclaredMethods()) {
-            if (method.isAnnotationPresent(ECHandler.class) && method.getParameterCount() == 1 && ECEvent.class.isAssignableFrom(method.getParameterTypes()[0])) {
-                if (!this.listeners.containsKey((Class<? extends ECEvent>) method.getParameterTypes()[0])) {
-                    this.listeners.put((Class<? extends ECEvent>) method.getParameterTypes()[0], new ArrayList<>());
-                }
-                this.listeners.get((Class<? extends ECEvent>) method.getParameterTypes()[0]).add(new AbstractMap.SimpleEntry<>(listener, method));
+            if (method.isAnnotationPresent(ECHandler.class)) {
+                if (method.getParameterCount() == 1 && ECEvent.class.isAssignableFrom(method.getParameterTypes()[0])) {
+                    if (!this.listeners.containsKey((Class<? extends ECEvent>) method.getParameterTypes()[0])) {
+                        this.listeners.put((Class<? extends ECEvent>) method.getParameterTypes()[0], new ArrayList<>());
+                    }
+                    this.listeners.get((Class<? extends ECEvent>) method.getParameterTypes()[0]).add(new AbstractMap.SimpleEntry<>(listener, method));
 
-                this.listeners.get((Class<? extends ECEvent>) method.getParameterTypes()[0]).sort(Comparator.comparingInt(a -> a.getValue().getDeclaredAnnotationsByType(ECHandler.class)[0].order().getValue()));
+                    this.listeners.get((Class<? extends ECEvent>) method.getParameterTypes()[0]).sort(Comparator.comparingInt(a -> a.getValue().getDeclaredAnnotationsByType(ECHandler.class)[0].order().getValue()));
+                } else {
+                    this.getServer().getPlugin().getLogger().warn("Warning registered listener, method is annotated with ECHandler but is not valid! {}.", method);
+                }
             }
         }
 
@@ -400,19 +421,23 @@ public class ECVelocityEventManager implements ECEventManager {
     @SuppressWarnings("unchecked")
     @Override
     public @NotNull ECListener unregister(@NotNull ECListener listener) {
+        this.server.getHandle().getEventManager().unregisterListener(this.server.getPlugin().getHandle(), listener);
+
         for (Method method : listener.getClass().getDeclaredMethods()) {
-            if (method.getParameterCount() == 1 && ECEvent.class.isAssignableFrom(method.getParameterTypes()[0]) && method.getDeclaredAnnotationsByType(ECHandler.class).length > 0 && this.listeners.containsKey((Class<? extends ECEvent>) method.getParameterTypes()[0])) {
+            if (method.isAnnotationPresent(ECHandler.class) && method.getParameterCount() == 1 && ECEvent.class.isAssignableFrom(method.getParameterTypes()[0]) && this.listeners.containsKey((Class<? extends ECEvent>) method.getParameterTypes()[0])) {
                 this.listeners.get((Class<? extends ECEvent>) method.getParameterTypes()[0]).remove(new AbstractMap.SimpleEntry<>(listener, method));
             }
         }
-
-        this.server.getHandle().getEventManager().unregisterListener(this.server.getPlugin().getHandle(), listener);
 
         return listener;
     }
 
     @Override
     public void unregisterAll() {
-        this.listeners.clear();
+        for (Map.Entry<Class<? extends ECEvent>, List<Map.Entry<ECListener, Method>>> classEntry : this.listeners.entrySet()) {
+            for (ECListener listener : classEntry.getValue().stream().map(Map.Entry::getKey).toList()) {
+                this.unregister(listener);
+            }
+        }
     }
 }

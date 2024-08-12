@@ -17,6 +17,7 @@ import java.util.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.GameRule;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -28,7 +29,7 @@ public class ECPaperEventManager implements ECEventManager {
     protected class PaperListener implements Listener {
         protected final @NotNull ECPaperEventManager parent = ECPaperEventManager.this;
 
-        @EventHandler
+        @EventHandler(priority=EventPriority.HIGH)
         public void onPlayerJoin(@NotNull PlayerLoginEvent event) {
             if (!parent.server.getPlugin().getPlayerData().players.containsKey(event.getPlayer().getUniqueId().toString())) {
                 parent.server.getPlugin().getPlayerData().players.put(event.getPlayer().getUniqueId().toString(), new ECPlayerData.Player(event.getPlayer().getUniqueId(), event.getPlayer().getName()));
@@ -43,7 +44,7 @@ public class ECPaperEventManager implements ECEventManager {
             }
         }
 
-        @EventHandler
+        @EventHandler(priority=EventPriority.HIGH)
         public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
             Component ogMessage = event.joinMessage();
             io.github.evercraftmc.core.api.events.player.PlayerJoinEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerJoinEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), ogMessage != null ? ECComponentFormatter.componentToString(ogMessage) : "");
@@ -58,7 +59,7 @@ public class ECPaperEventManager implements ECEventManager {
             }
         }
 
-        @EventHandler
+        @EventHandler(priority=EventPriority.HIGH)
         public void onPlayerLeave(@NotNull PlayerQuitEvent event) {
             Component ogMessage = event.quitMessage();
             io.github.evercraftmc.core.api.events.player.PlayerLeaveEvent newEvent = new io.github.evercraftmc.core.api.events.player.PlayerLeaveEvent(new ECPaperPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), ogMessage != null ? ECComponentFormatter.componentToString(ogMessage) : "");
@@ -71,7 +72,7 @@ public class ECPaperEventManager implements ECEventManager {
             }
         }
 
-        @EventHandler
+        @EventHandler(priority=EventPriority.HIGH)
         public void onPlayerChat(@NotNull AsyncChatEvent event) {
             String message = ECComponentFormatter.componentToString(event.message());
             if (message.isEmpty()) {
@@ -98,7 +99,7 @@ public class ECPaperEventManager implements ECEventManager {
             }
         }
 
-        @EventHandler
+        @EventHandler(priority=EventPriority.HIGH)
         public void onPlayerCommand(@NotNull PlayerCommandPreprocessEvent event) {
             String message = event.getMessage();
             if (message.isEmpty() || message.equalsIgnoreCase("/")) {
@@ -120,7 +121,7 @@ public class ECPaperEventManager implements ECEventManager {
             }
         }
 
-        @EventHandler
+        @EventHandler(priority=EventPriority.HIGH)
         public void onPlayerChat(@NotNull PlayerDeathEvent event) {
             Component component = event.deathMessage();
             if (component == null) {
@@ -146,7 +147,7 @@ public class ECPaperEventManager implements ECEventManager {
             }
         }
 
-        @EventHandler
+        @EventHandler(priority=EventPriority.HIGH)
         public void onPlayerChat(@NotNull PlayerAdvancementDoneEvent event) {
             Component component = event.message();
             if (component == null || event.getAdvancement().getDisplay() == null || !event.getAdvancement().getDisplay().doesAnnounceToChat() || Boolean.FALSE.equals(event.getPlayer().getWorld().getGameRuleValue(GameRule.ANNOUNCE_ADVANCEMENTS))) {
@@ -209,13 +210,17 @@ public class ECPaperEventManager implements ECEventManager {
         }
 
         for (Method method : listener.getClass().getDeclaredMethods()) {
-            if (method.isAnnotationPresent(ECHandler.class) && method.getParameterCount() == 1 && ECEvent.class.isAssignableFrom(method.getParameterTypes()[0])) {
-                if (!this.listeners.containsKey((Class<? extends ECEvent>) method.getParameterTypes()[0])) {
-                    this.listeners.put((Class<? extends ECEvent>) method.getParameterTypes()[0], new ArrayList<>());
-                }
-                this.listeners.get((Class<? extends ECEvent>) method.getParameterTypes()[0]).add(new AbstractMap.SimpleEntry<>(listener, method));
+            if (method.isAnnotationPresent(ECHandler.class)) {
+                if (method.getParameterCount() == 1 && ECEvent.class.isAssignableFrom(method.getParameterTypes()[0])) {
+                    if (!this.listeners.containsKey((Class<? extends ECEvent>) method.getParameterTypes()[0])) {
+                        this.listeners.put((Class<? extends ECEvent>) method.getParameterTypes()[0], new ArrayList<>());
+                    }
+                    this.listeners.get((Class<? extends ECEvent>) method.getParameterTypes()[0]).add(new AbstractMap.SimpleEntry<>(listener, method));
 
-                this.listeners.get((Class<? extends ECEvent>) method.getParameterTypes()[0]).sort(Comparator.comparingInt(a -> a.getValue().getDeclaredAnnotationsByType(ECHandler.class)[0].order().getValue()));
+                    this.listeners.get((Class<? extends ECEvent>) method.getParameterTypes()[0]).sort(Comparator.comparingInt(a -> a.getValue().getDeclaredAnnotationsByType(ECHandler.class)[0].order().getValue()));
+                } else {
+                    this.getServer().getPlugin().getLogger().warn("Warning registered listener, method is annotated with ECHandler but is not valid! {}.", method);
+                }
             }
         }
 
@@ -225,14 +230,14 @@ public class ECPaperEventManager implements ECEventManager {
     @SuppressWarnings("unchecked")
     @Override
     public @NotNull ECListener unregister(@NotNull ECListener listener) {
-        for (Method method : listener.getClass().getDeclaredMethods()) {
-            if (method.getParameterCount() == 1 && ECEvent.class.isAssignableFrom(method.getParameterTypes()[0]) && method.getDeclaredAnnotationsByType(ECHandler.class).length > 0 && this.listeners.containsKey((Class<? extends ECEvent>) method.getParameterTypes()[0])) {
-                this.listeners.get((Class<? extends ECEvent>) method.getParameterTypes()[0]).remove(new AbstractMap.SimpleEntry<>(listener, method));
-            }
-        }
-
         if (listener instanceof org.bukkit.event.Listener paperListener) {
             HandlerList.unregisterAll(paperListener);
+        }
+
+        for (Method method : listener.getClass().getDeclaredMethods()) {
+            if (method.isAnnotationPresent(ECHandler.class) && method.getParameterCount() == 1 && ECEvent.class.isAssignableFrom(method.getParameterTypes()[0]) && this.listeners.containsKey((Class<? extends ECEvent>) method.getParameterTypes()[0])) {
+                this.listeners.get((Class<? extends ECEvent>) method.getParameterTypes()[0]).remove(new AbstractMap.SimpleEntry<>(listener, method));
+            }
         }
 
         return listener;
@@ -240,6 +245,10 @@ public class ECPaperEventManager implements ECEventManager {
 
     @Override
     public void unregisterAll() {
-        this.listeners.clear();
+        for (Map.Entry<Class<? extends ECEvent>, List<Map.Entry<ECListener, Method>>> classEntry : this.listeners.entrySet()) {
+            for (ECListener listener : classEntry.getValue().stream().map(Map.Entry::getKey).toList()) {
+                this.unregister(listener);
+            }
+        }
     }
 }
