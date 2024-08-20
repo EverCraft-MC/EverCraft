@@ -27,26 +27,80 @@ subprojects {
     }
 }
 
-tasks.register("upload") {
-    dependsOn subprojects.collect {
-        it.tasks.fatJar
-    }
+interface UploadTaskParameters extends WorkParameters {
+    Property<String> getFromPath();
 
-    doLast {
+    Property<String> getToPath();
+}
+
+abstract class UploadTask implements WorkAction<UploadTaskParameters> {
+    @Override
+    void execute() {
+        def fromPath = getParameters().getFromPath().get()
+        def toPath = getParameters().getToPath().get()
+
+        def processBuilder = new ProcessBuilder().command("rsync", "-q", fromPath, toPath).redirectOutput(ProcessBuilder.Redirect.INHERIT).redirectError(ProcessBuilder.Redirect.INHERIT).redirectInput(ProcessBuilder.Redirect.PIPE)
+        processBuilder.environment().putAll(System.getenv())
+        def process = processBuilder.start()
+
+        int status = process.waitFor()
+
+        if (status != 0) {
+            throw new RuntimeException("Process did not exit with status code 0 but rather " + status + " .")
+        }
+    }
+}
+
+import javax.inject.Inject
+
+abstract class UploadAllTask extends DefaultTask {
+    @Inject
+    abstract WorkerExecutor getWorkerExecutor();
+
+    @Input
+    @Optional()
+    @Option(option = "uploadMask", description = "Configures the server upload mask.")
+    abstract Property<String> getUploadMask();
+
+    @TaskAction
+    void execute() {
+        def workQueue = getWorkerExecutor().noIsolation()
+
         def path = System.getenv("EVERCRAFT_PATH")
+        if (!path.endsWith("/")) {
+            path = path + "/"
+        }
+
         def servers = System.getenv("EVERCRAFT_SERVERS").split(";")
 
-        servers.each() {
-            def server = it
-            def modules = server.split(":")[1].split(",")
+        for (def serverDef : servers) {
+            def server = serverDef.split(":", 3)
 
-            modules.each() {
-                def module = it
+            def serverId = server[0]
+            def moduleIds = server[1].split(",")
+            def uploadPath = server[2]
+            if (!uploadPath.startsWith("/")) {
+                uploadPath = "/" + uploadPath
+            }
+            if (!uploadPath.endsWith("/")) {
+                uploadPath = uploadPath + "/"
+            }
 
-                exec {
-                    commandLine "rsync", "-q", project(":" + module).tasks.fatJar.outputs.files[0].toPath(), path + server.split(":")[0] + server.split(":")[2] + "/EverCraft-" + module + ".jar"
-                }
+            for (def moduleId : moduleIds) {
+                def fromPath = project.project(":" + moduleId).tasks.fatJar.outputs.files[0].toPath().toAbsolutePath().toString()
+                def toPath = path + serverId + uploadPath + "EverCraft-" + moduleId + ".jar"
+
+                workQueue.submit(UploadTask.class, (parameters) -> {
+                    parameters.getFromPath().set(fromPath)
+                    parameters.getToPath().set(toPath)
+                })
             }
         }
+    }
+}
+
+tasks.register("upload", UploadAllTask) {
+    dependsOn subprojects.collect {
+        it.tasks.fatJar
     }
 }
