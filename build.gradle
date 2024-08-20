@@ -27,50 +27,54 @@ subprojects {
     }
 }
 
-def path = System.getenv("EVERCRAFT_PATH")
-if (!path.endsWith("/")) {
-    path = path + "/"
-}
-
-def servers = System.getenv("EVERCRAFT_SERVERS").split(";")
-
-for (def serverDef : servers) {
-    def server = serverDef.split(":", 4)
-
-    def serverId = server[0]
-    def serverName = server[1]
-    def moduleNames = server[2].split(",")
-    def uploadPath = server[3]
-    if (!uploadPath.startsWith("/")) {
-        uploadPath = "/" + uploadPath
-    }
-    if (!uploadPath.endsWith("/")) {
-        uploadPath = uploadPath + "/"
+if (System.getenv("EVERCRAFT_PATH") != null && System.getenv("EVERCRAFT_SERVERS") != null) {
+    def path = System.getenv("EVERCRAFT_PATH")
+    if (!path.endsWith("/")) {
+        path = path + "/"
     }
 
-    for (def moduleId : moduleNames) {
-        tasks.register("upload-${serverName}-${moduleId}", Exec) {
-            def fromPath = project(":" + moduleId).tasks.fatJar.outputs.files[0].toPath().toAbsolutePath().toString()
-            def toPath = path + serverId + uploadPath + "EverCraft-" + moduleId + ".jar"
-
-            commandLine "rsync", "-q", fromPath, toPath
-        }
-    }
-}
-
-tasks.register("upload") {
-    dependsOn subprojects.collect {
-        it.tasks.fatJar
-    }
+    def servers = System.getenv("EVERCRAFT_SERVERS").split(";")
 
     for (def serverDef : servers) {
         def server = serverDef.split(":", 4)
 
+        def serverId = server[0]
         def serverName = server[1]
         def moduleNames = server[2].split(",")
+        def uploadPath = server[3]
+        if (!uploadPath.startsWith("/")) {
+            uploadPath = "/" + uploadPath
+        }
+        if (!uploadPath.endsWith("/")) {
+            uploadPath = uploadPath + "/"
+        }
 
         for (def moduleId : moduleNames) {
-            dependsOn tasks.named("upload-${serverName}-${moduleId}")
+            tasks.register("upload-${serverName}-${moduleId}", Exec) {
+                def fromPath = project(":" + moduleId).tasks.fatJar.outputs.files[0].toPath().toAbsolutePath().toString()
+                def toPath = path + serverId + uploadPath + "EverCraft-" + moduleId + ".jar"
+
+                commandLine "rsync", "-q", fromPath, toPath
+            }
         }
     }
+
+    tasks.register("upload") {
+        dependsOn subprojects.collect {
+            it.tasks.fatJar
+        }
+
+        for (def serverDef : servers) {
+            def server = serverDef.split(":", 4)
+
+            def serverName = server[1]
+            def moduleNames = server[2].split(",")
+
+            for (def moduleId : moduleNames) {
+                dependsOn tasks.named("upload-${serverName}-${moduleId}")
+            }
+        }
+    }
+} else {
+    logger.log(LogLevel.WARN, "Missing or EVERCRAFT_PATH or EVERCRAFT_SERVERS environment variables, uploading will be disabled")
 }
