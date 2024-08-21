@@ -17,6 +17,11 @@ public class BanListener implements ECListener {
         this.parent = parent;
     }
 
+    @Override
+    public ModerationModule getModule() {
+        return parent;
+    }
+
     @ECHandler(order=ECHandlerOrder.FIRST)
     public void onPlayerJoin(@NotNull PlayerLoginEvent event) {
         if (parent.getPlugin().getPlayerData().players.get(event.getPlayer().getUuid().toString()).ban != null) {

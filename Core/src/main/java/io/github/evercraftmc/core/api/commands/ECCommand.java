@@ -1,11 +1,14 @@
 package io.github.evercraftmc.core.api.commands;
 
+import io.github.evercraftmc.core.api.ECModule;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface ECCommand {
+    public ECModule getModule();
+
     public @NotNull String getName();
 
     public @NotNull List<String> getAlias();

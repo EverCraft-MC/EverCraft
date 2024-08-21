@@ -18,6 +18,11 @@ public class JoinListener implements ECListener {
         this.parent = parent;
     }
 
+    @Override
+    public GlobalModule getModule() {
+        return parent;
+    }
+
     @ECHandler(order=ECHandlerOrder.BEFORE)
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         if (parent.getPlugin().getEnvironment().getType() == ECEnvironmentType.PROXY) {

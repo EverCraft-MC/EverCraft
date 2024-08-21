@@ -26,6 +26,11 @@ public class ChatListener implements ECListener {
         this.parent = parent;
     }
 
+    @Override
+    public GlobalModule getModule() {
+        return parent;
+    }
+
     @ECHandler(order=ECHandlerOrder.BEFORE)
     public void onPlayerChat(@NotNull PlayerChatEvent event) {
         if (parent.getPlugin().getEnvironment().getType() == ECEnvironmentType.PROXY) {

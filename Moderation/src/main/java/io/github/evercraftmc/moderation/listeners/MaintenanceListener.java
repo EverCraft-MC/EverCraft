@@ -16,6 +16,11 @@ public class MaintenanceListener implements ECListener {
         this.parent = parent;
     }
 
+    @Override
+    public ModerationModule getModule() {
+        return parent;
+    }
+
     @ECHandler(order=ECHandlerOrder.BEFORE)
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         if (parent.getPlugin().getEnvironment().getType() != ECEnvironmentType.PROXY) {

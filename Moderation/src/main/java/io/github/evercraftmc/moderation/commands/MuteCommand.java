@@ -19,6 +19,11 @@ public class MuteCommand implements ECCommand {
     }
 
     @Override
+    public ModerationModule getModule() {
+        return parent;
+    }
+
+    @Override
     public @NotNull String getName() {
         return "mute";
     }

@@ -17,6 +17,11 @@ public class MuteListener implements ECListener {
         this.parent = parent;
     }
 
+    @Override
+    public ModerationModule getModule() {
+        return parent;
+    }
+
     @ECHandler(order=ECHandlerOrder.FIRST)
     public void onPlayerChat(@NotNull PlayerChatEvent event) {
         if (parent.getPlugin().getPlayerData().players.get(event.getPlayer().getUuid().toString()).mute != null) {

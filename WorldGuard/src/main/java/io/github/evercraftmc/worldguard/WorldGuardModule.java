@@ -24,7 +24,7 @@ public class WorldGuardModule extends ECModule {
             throw new RuntimeException("Unsupported environment");
         }
 
-        this.listeners.add(this.plugin.getServer().getEventManager().register(new WorldGuardListener()));
+        this.listeners.add(this.plugin.getServer().getEventManager().register(new WorldGuardListener(this)));
     }
 
     public void unload() {

@@ -16,6 +16,11 @@ public class MaintenanceCommand implements ECCommand {
     }
 
     @Override
+    public ModerationModule getModule() {
+        return parent;
+    }
+
+    @Override
     public @NotNull String getName() {
         return "maintenance";
     }

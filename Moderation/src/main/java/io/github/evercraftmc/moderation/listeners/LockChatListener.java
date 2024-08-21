@@ -16,6 +16,11 @@ public class LockChatListener implements ECListener {
         this.parent = parent;
     }
 
+    @Override
+    public ModerationModule getModule() {
+        return parent;
+    }
+
     @ECHandler(order=ECHandlerOrder.BEFORE)
     public void onPlayerChat(@NotNull PlayerChatEvent event) {
         if (parent.getPlugin().getEnvironment().getType() != ECEnvironmentType.PROXY) {

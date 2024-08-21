@@ -1,5 +1,6 @@
 package io.github.evercraftmc.core.impl.paper.server;
 
+import io.github.evercraftmc.core.api.ECModule;
 import io.github.evercraftmc.core.api.commands.ECCommand;
 import io.github.evercraftmc.core.api.events.ECHandler;
 import io.github.evercraftmc.core.api.events.ECListener;
@@ -161,6 +162,11 @@ public class ECPaperCommandManager implements ECCommandManager {
 
         this.server.getEventManager().register(new ECListener() {
             private final ECPaperCommandManager parent = ECPaperCommandManager.this;
+
+            @Override
+            public ECModule getModule() {
+                return null;
+            }
 
             @ECHandler
             public void onMessage(@NotNull MessageEvent event) {

@@ -17,6 +17,11 @@ public class ServerChoiceListener implements ECListener {
         this.parent = parent;
     }
 
+    @Override
+    public GlobalModule getModule() {
+        return parent;
+    }
+
     @ECHandler(order=ECHandlerOrder.BEFORE)
     public void onPlayerJoin(@NotNull PlayerProxyJoinEvent event) {
         String server = ((ECProxyServer) parent.getPlugin().getServer()).getDefaultServer().name();

@@ -17,6 +17,11 @@ public class CommandSpyListener implements ECListener {
         this.parent = parent;
     }
 
+    @Override
+    public ModerationModule getModule() {
+        return parent;
+    }
+
     @ECHandler(order=ECHandlerOrder.BEFORE)
     public void onPlayerChat(@NotNull PlayerCommandEvent event) {
         if (parent.getPlugin().getEnvironment().getType() != ECEnvironmentType.PROXY) {

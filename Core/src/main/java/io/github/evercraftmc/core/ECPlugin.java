@@ -352,6 +352,11 @@ public class ECPlugin {
         this.server.getEventManager().register(new ECListener() {
             private final @NotNull ECPlugin parent = ECPlugin.this;
 
+            @Override
+            public ECModule getModule() {
+                return null;
+            }
+
             @ECHandler
             public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
                 parent.getPlayerData().players.get(event.getPlayer().getUuid().toString()).uuid = event.getPlayer().getUuid();

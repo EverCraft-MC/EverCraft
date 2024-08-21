@@ -5,6 +5,7 @@ import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.ConsoleCommandSource;
 import com.velocitypowered.api.proxy.Player;
+import io.github.evercraftmc.core.api.ECModule;
 import io.github.evercraftmc.core.api.commands.ECCommand;
 import io.github.evercraftmc.core.api.events.ECHandler;
 import io.github.evercraftmc.core.api.events.ECListener;
@@ -162,6 +163,11 @@ public class ECVelocityCommandManager implements ECCommandManager {
 
         this.server.getEventManager().register(new ECListener() {
             private final ECVelocityCommandManager parent = ECVelocityCommandManager.this;
+
+            @Override
+            public ECModule getModule() {
+                return null;
+            }
 
             @ECHandler
             public void onMessage(@NotNull MessageEvent event) {

@@ -18,6 +18,11 @@ public class StaffChatListener implements ECListener {
         this.parent = parent;
     }
 
+    @Override
+    public ModerationModule getModule() {
+        return parent;
+    }
+
     @ECHandler(order=ECHandlerOrder.AFTER)
     public void onPlayerChat(@NotNull PlayerChatEvent event) {
         if (event.getType() == PlayerChatEvent.MessageType.CHAT && parent.getPlugin().getPlayerData().players.get(event.getPlayer().getUuid().toString()).staffChat && event.getPlayer().hasPermission("evercraft.moderation.commands.staffChat")) {
