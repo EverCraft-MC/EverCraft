@@ -39,14 +39,15 @@ abstract class UploadTask implements WorkAction<UploadTaskParameters> {
         def fromPath = getParameters().getFromPath().get()
         def toPath = getParameters().getToPath().get()
 
-        def processBuilder = new ProcessBuilder().command("rsync", "-q", fromPath, toPath).redirectOutput(ProcessBuilder.Redirect.INHERIT).redirectError(ProcessBuilder.Redirect.INHERIT).redirectInput(ProcessBuilder.Redirect.PIPE)
+        def processBuilder = new ProcessBuilder().command("rsync", "-q", fromPath, toPath).redirectOutput(ProcessBuilder.Redirect.PIPE).redirectError(ProcessBuilder.Redirect.PIPE).redirectInput(ProcessBuilder.Redirect.PIPE)
         processBuilder.environment().putAll(System.getenv())
         def process = processBuilder.start()
 
         int status = process.waitFor()
 
         if (status != 0) {
-            throw new RuntimeException("Process did not exit with status code 0 but rather " + status + " .")
+            def stderr = new String(process.getErrorStream().readAllBytes())
+            throw new RuntimeException("Process did not exit with status code 0 but rather " + status + ".\n" + stderr)
         }
     }
 }
@@ -74,11 +75,12 @@ abstract class UploadAllTask extends DefaultTask {
         def servers = System.getenv("EVERCRAFT_SERVERS").split(";")
 
         for (def serverDef : servers) {
-            def server = serverDef.split(":", 3)
+            def server = serverDef.split(":", 4)
 
             def serverId = server[0]
-            def moduleIds = server[1].split(",")
-            def uploadPath = server[2]
+            def serverName = server[1]
+            def moduleNames = server[2].split(",")
+            def uploadPath = server[3]
             if (!uploadPath.startsWith("/")) {
                 uploadPath = "/" + uploadPath
             }
@@ -86,9 +88,9 @@ abstract class UploadAllTask extends DefaultTask {
                 uploadPath = uploadPath + "/"
             }
 
-            for (def moduleId : moduleIds) {
-                def fromPath = project.project(":" + moduleId).tasks.fatJar.outputs.files[0].toPath().toAbsolutePath().toString()
-                def toPath = path + serverId + uploadPath + "EverCraft-" + moduleId + ".jar"
+            for (def moduleName : moduleNames) {
+                def fromPath = project.project(":" + moduleName).tasks.fatJar.outputs.files[0].toPath().toAbsolutePath().toString()
+                def toPath = path + serverId + uploadPath + "EverCraft-" + moduleName + ".jar"
 
                 workQueue.submit(UploadTask.class, (parameters) -> {
                     parameters.getFromPath().set(fromPath)
