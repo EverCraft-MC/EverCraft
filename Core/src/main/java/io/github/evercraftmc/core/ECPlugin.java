@@ -146,7 +146,7 @@ public class ECPlugin {
 
             String response;
             try (HttpClient httpClient = HttpClient.newBuilder().build()) {
-                HttpRequest httpRequest = HttpRequest.newBuilder(new URI("https://raw.githubusercontent.com/Kale-Ko/minecraft-assets/" + this.getServer().getMinecraftVersion() + "/assets/minecraft/lang/en_us.json")).GET().build();
+                HttpRequest httpRequest = HttpRequest.newBuilder(new URI("https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/" + this.getServer().getMinecraftVersion() + "/assets/minecraft/lang/en_us.json")).GET().build();
                 response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString()).body();
             }
 
