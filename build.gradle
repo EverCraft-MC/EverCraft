@@ -49,10 +49,14 @@ if (System.getenv("EVERCRAFT_PATH") != null && System.getenv("EVERCRAFT_SERVERS"
             uploadPath = uploadPath + "/"
         }
 
-        for (def moduleId : moduleNames) {
-            tasks.register("upload-${serverName}-${moduleId}", Exec) {
-                def fromPath = project(":" + moduleId).tasks.fatJar.outputs.files[0].toPath().toAbsolutePath().toString()
-                def toPath = path + serverId + uploadPath + "EverCraft-" + moduleId + ".jar"
+        for (def moduleName : moduleNames) {
+            final def moduleNameCp = moduleName
+            final def toPath = path + serverId + uploadPath + "EverCraft-" + moduleName + ".jar"
+
+            tasks.register("upload-${serverName}-${moduleName}", Exec) {
+                dependsOn project(":" + moduleNameCp).tasks.fatJar
+
+                final def fromPath = project(":" + moduleNameCp).tasks.fatJar.outputs.files[0].toPath().toAbsolutePath().toString()
 
                 commandLine "rsync", "-q", fromPath, toPath
             }
@@ -70,8 +74,8 @@ if (System.getenv("EVERCRAFT_PATH") != null && System.getenv("EVERCRAFT_SERVERS"
             def serverName = server[1]
             def moduleNames = server[2].split(",")
 
-            for (def moduleId : moduleNames) {
-                dependsOn tasks.named("upload-${serverName}-${moduleId}")
+            for (def moduleName : moduleNames) {
+                dependsOn tasks.named("upload-${serverName}-${moduleName}")
             }
         }
     }
