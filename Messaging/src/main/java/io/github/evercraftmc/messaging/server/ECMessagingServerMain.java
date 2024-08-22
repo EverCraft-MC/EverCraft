@@ -1,6 +1,7 @@
 package io.github.evercraftmc.messaging.server;
 
-import io.github.kale_ko.ejcl.file.bjsl.StructuredYamlFileConfig;
+import io.github.kale_ko.bjsl.parsers.YamlParser;
+import io.github.kale_ko.ejcl.file.bjsl.StructuredBJSLFileConfig;
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.util.Scanner;
@@ -20,7 +21,7 @@ public class ECMessagingServerMain {
         try {
             logger.info("Loading config...");
 
-            StructuredYamlFileConfig<MessagingDetails> messagingDetails = new StructuredYamlFileConfig<>(MessagingDetails.class, Path.of("messaging.yml").toFile());
+            StructuredBJSLFileConfig<MessagingDetails> messagingDetails = new StructuredBJSLFileConfig.Builder<>(MessagingDetails.class, Path.of("messaging.yml").toFile(), new YamlParser.Builder().build()).build();
             messagingDetails.load(true);
 
             ECMessagingServer server = new ECMessagingServer(logger, new InetSocketAddress(messagingDetails.get().host, messagingDetails.get().port));

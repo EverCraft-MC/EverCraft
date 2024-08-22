@@ -13,7 +13,7 @@ import io.github.kale_ko.bjsl.BJSL;
 import io.github.kale_ko.bjsl.elements.ParsedObject;
 import io.github.kale_ko.bjsl.parsers.YamlParser;
 import io.github.kale_ko.bjsl.processor.ObjectProcessor;
-import io.github.kale_ko.ejcl.file.bjsl.StructuredYamlFileConfig;
+import io.github.kale_ko.ejcl.file.bjsl.StructuredBJSLFileConfig;
 import io.github.kale_ko.ejcl.mysql.StructuredMySQLConfig;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -40,14 +40,14 @@ import org.slf4j.Logger;
 public class ECPlugin {
     private static class MessagingDetails {
         public String host = "127.0.0.1";
-        public int port = 3000;
+        public short port = 3000;
 
         public UUID id = null;
     }
 
     private static class MySQLDetails {
         public String host;
-        public int port;
+        public short port;
 
         public String username;
         public String password;
@@ -104,7 +104,7 @@ public class ECPlugin {
         }
 
         try {
-            StructuredYamlFileConfig<MessagingDetails> messagingDetails = new StructuredYamlFileConfig<>(MessagingDetails.class, dataDirectory.toPath().resolve("messaging.yml").toFile(), new YamlParser.Builder().build());
+            StructuredBJSLFileConfig<MessagingDetails> messagingDetails = new StructuredBJSLFileConfig.Builder<>(MessagingDetails.class, Path.of("messaging.yml").toFile(), new YamlParser.Builder().build()).build();
             messagingDetails.load(true);
             if (messagingDetails.get().id == null) {
                 messagingDetails.get().id = UUID.fromString(System.getProperty("serverID"));
@@ -121,12 +121,12 @@ public class ECPlugin {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
 
-            StructuredYamlFileConfig<MySQLDetails> mySqlDetails = new StructuredYamlFileConfig<>(MySQLDetails.class, dataDirectory.toPath().resolve("mysql.yml").toFile(), new YamlParser.Builder().build());
-            mySqlDetails.load(true);
+            StructuredBJSLFileConfig<MySQLDetails> mysqlDetails = new StructuredBJSLFileConfig.Builder<>(MySQLDetails.class, Path.of("mysql.yml").toFile(), new YamlParser.Builder().build()).build();
+            mysqlDetails.load(true);
 
             this.logger.info("Connecting to MySQL server..");
 
-            this.data = new StructuredMySQLConfig<>(ECPlayerData.class, mySqlDetails.get().host, mySqlDetails.get().port, mySqlDetails.get().database, "evercraft", mySqlDetails.get().username, mySqlDetails.get().password, new ObjectProcessor.Builder().setIgnoreNulls(true).setIgnoreEmptyObjects(true).setIgnoreDefaults(true).build());
+            this.data = new StructuredMySQLConfig.Builder<>(ECPlayerData.class, mysqlDetails.get().host, mysqlDetails.get().port, mysqlDetails.get().database, "evercraft").setUsername(mysqlDetails.get().username).setPassword(mysqlDetails.get().password).setUseMariadb(true).setProcessor(new ObjectProcessor.Builder().setIgnoreNulls(true).setIgnoreEmptyObjects(true).setIgnoreDefaults(true).build()).build();
             this.data.connect();
 
             this.logger.info("Loading plugin data..");
