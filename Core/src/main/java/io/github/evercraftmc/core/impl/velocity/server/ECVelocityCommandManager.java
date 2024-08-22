@@ -108,13 +108,23 @@ public class ECVelocityCommandManager implements ECCommandManager {
         public List<String> suggest(@NotNull Invocation invocation) {
             CommandSource sender = invocation.source();
             String label = invocation.alias();
-            List<String> args = new ArrayList<>(Arrays.asList(invocation.arguments()));
-            args.add(0, label);
+            String[] args = invocation.arguments();
+            if (args.length == 0) {
+                args = new String[] { "" };
+            }
 
             if (sender instanceof Player velocityPlayer) {
                 if (this.hasPermission(invocation)) {
                     try {
-                        return this.command.tabComplete(parent.server.getOnlinePlayer(velocityPlayer.getUniqueId()), args);
+                        List<String> completions = this.command.tabComplete(parent.server.getOnlinePlayer(velocityPlayer.getUniqueId()), Arrays.asList(args));
+
+                        List<String> matches = new ArrayList<>();
+                        for (String string : completions) {
+                            if (string.toLowerCase().startsWith(args[args.length - 1].toLowerCase())) {
+                                matches.add(string);
+                            }
+                        }
+                        return matches;
                     } catch (Exception e) {
                         parent.getServer().getPlugin().getLogger().error("Error while tab-completing command {}.", label, e);
 
@@ -125,7 +135,7 @@ public class ECVelocityCommandManager implements ECCommandManager {
                 }
             } else if (sender instanceof ConsoleCommandSource) {
                 try {
-                    return this.command.tabComplete(parent.server.getConsole(), args);
+                    return this.command.tabComplete(parent.server.getConsole(), Arrays.asList(args));
                 } catch (Exception e) {
                     parent.getServer().getPlugin().getLogger().error("Error while tab-completing command {}.", label, e);
 

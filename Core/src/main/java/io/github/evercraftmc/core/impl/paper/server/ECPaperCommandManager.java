@@ -114,7 +114,15 @@ public class ECPaperCommandManager implements ECCommandManager {
             if (sender instanceof Player paperPlayer) {
                 if (this.testPermissionSilent(paperPlayer)) {
                     try {
-                        return this.command.tabComplete(parent.server.getOnlinePlayer(paperPlayer.getUniqueId()), Arrays.asList(args));
+                        List<String> completions = this.command.tabComplete(parent.server.getOnlinePlayer(paperPlayer.getUniqueId()), Arrays.asList(args));
+
+                        List<String> matches = new ArrayList<>();
+                        for (String string : completions) {
+                            if (string.toLowerCase().startsWith(args[args.length - 1].toLowerCase())) {
+                                matches.add(string);
+                            }
+                        }
+                        return matches;
                     } catch (Exception e) {
                         parent.getServer().getPlugin().getLogger().error("Error while tab-completing command {}.", label, e);
 
