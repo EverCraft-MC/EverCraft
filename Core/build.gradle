@@ -23,7 +23,7 @@ dependencies {
     compileOnly "com.velocitypowered:velocity-api:${velocity_version}"
     compileOnly "io.netty:netty-all:${netty_version}"
 
-    implementation "com.mysql:mysql-connector-j:${mysql_version}"
+    implementation "org.mariadb.jdbc:mariadb-java-client:${mariadb_connector_version}"
 
     implementation "org.slf4j:slf4j-api:${slf4j_version}"
 }

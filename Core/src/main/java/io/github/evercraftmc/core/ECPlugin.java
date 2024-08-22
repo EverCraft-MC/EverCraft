@@ -104,7 +104,7 @@ public class ECPlugin {
         }
 
         try {
-            StructuredBJSLFileConfig<MessagingDetails> messagingDetails = new StructuredBJSLFileConfig.Builder<>(MessagingDetails.class, Path.of("messaging.yml").toFile(), new YamlParser.Builder().build()).build();
+            StructuredBJSLFileConfig<MessagingDetails> messagingDetails = new StructuredBJSLFileConfig.Builder<>(MessagingDetails.class, this.dataDirectory.toPath().resolve("messaging.yml").toFile(), new YamlParser.Builder().build()).build();
             messagingDetails.load(true);
             if (messagingDetails.get().id == null) {
                 messagingDetails.get().id = UUID.fromString(System.getProperty("serverID"));
@@ -119,9 +119,7 @@ public class ECPlugin {
         }
 
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-
-            StructuredBJSLFileConfig<MySQLDetails> mysqlDetails = new StructuredBJSLFileConfig.Builder<>(MySQLDetails.class, Path.of("mysql.yml").toFile(), new YamlParser.Builder().build()).build();
+            StructuredBJSLFileConfig<MySQLDetails> mysqlDetails = new StructuredBJSLFileConfig.Builder<>(MySQLDetails.class, this.dataDirectory.toPath().resolve("mysql.yml").toFile(), new YamlParser.Builder().build()).build();
             mysqlDetails.load(true);
 
             this.logger.info("Connecting to MySQL server..");
