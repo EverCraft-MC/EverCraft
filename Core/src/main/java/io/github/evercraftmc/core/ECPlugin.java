@@ -131,7 +131,7 @@ public class ECPlugin {
 
             this.data.load(false);
 
-            this.server.getScheduler().runTaskRepeat(this::loadData, 120 * 20, 120 * 20);
+            this.server.getScheduler().runTaskRepeat(this::loadData, 60 * 20, 120 * 20);
 
             this.logger.info("Loaded plugin data");
         } catch (Exception e) {
@@ -185,7 +185,7 @@ public class ECPlugin {
 
                     if (moduleInfo != null) {
                         this.moduleInfoMap.put(file, moduleInfo);
-                        this.fileMap.put(moduleInfo.getName().toLowerCase(), file);
+                        this.fileMap.put(moduleInfo.name().toLowerCase(), file);
                     } else {
                         this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Jar does not contain a module file (evercraft.yml)");
                     }
@@ -204,26 +204,26 @@ public class ECPlugin {
     }
 
     protected boolean loadModule(@NotNull Path file, @NotNull ECModuleInfo moduleInfo) {
-        if (this.loadedMap.containsKey(moduleInfo.getName().toLowerCase())) {
-            return this.loadedMap.get(moduleInfo.getName().toLowerCase());
+        if (this.loadedMap.containsKey(moduleInfo.name().toLowerCase())) {
+            return this.loadedMap.get(moduleInfo.name().toLowerCase());
         }
 
-        if (moduleInfo.getName() == null || moduleInfo.getVersion() == null || moduleInfo.getEntry() == null) {
+        if (moduleInfo.name() == null || moduleInfo.version() == null || moduleInfo.entry() == null) {
             this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Module info is missing fields");
 
-            this.loadedMap.put(moduleInfo.getName().toLowerCase(), false);
+            this.loadedMap.put(moduleInfo.name().toLowerCase(), false);
             return false;
         }
 
-        if (moduleInfo.getEnvironment() != null && !(moduleInfo.getEnvironment().trim().equalsIgnoreCase(this.getEnvironment().toString()) || moduleInfo.getEnvironment().trim().equalsIgnoreCase(this.getEnvironment().getType().toString()))) {
+        if (moduleInfo.environment() != null && !(moduleInfo.environment().trim().equalsIgnoreCase(this.getEnvironment().toString()) || moduleInfo.environment().trim().equalsIgnoreCase(this.getEnvironment().getType().toString()))) {
             this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Module is in incorrect environment");
 
-            this.loadedMap.put(moduleInfo.getName().toLowerCase(), false);
+            this.loadedMap.put(moduleInfo.name().toLowerCase(), false);
             return false;
         }
 
-        if (moduleInfo.getDepends() != null) {
-            for (String depend : moduleInfo.getDepends()) {
+        if (moduleInfo.depends() != null) {
+            for (String depend : moduleInfo.depends()) {
                 if (depend.equalsIgnoreCase("Core")) {
                     continue;
                 }
@@ -233,9 +233,9 @@ public class ECPlugin {
 
                 boolean loaded = this.loadModule(file2, moduleInfo2);
                 if (!loaded) {
-                    this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Dependency \"" + moduleInfo2.getName() + "\" failed to load");
+                    this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Dependency \"" + moduleInfo2.name() + "\" failed to load");
 
-                    this.loadedMap.put(moduleInfo.getName().toLowerCase(), false);
+                    this.loadedMap.put(moduleInfo.name().toLowerCase(), false);
                     return false;
                 }
             }
@@ -244,7 +244,7 @@ public class ECPlugin {
         try {
             ECModuleClassLoader moduleClassLoader = new ECModuleClassLoader(file);
             moduleClassLoader.catalogAll();
-            Class<?> moduleClass = moduleClassLoader.loadClass(moduleInfo.getEntry());
+            Class<?> moduleClass = moduleClassLoader.loadClass(moduleInfo.entry());
 
             if (ECModule.class.isAssignableFrom(moduleClass)) {
                 ECModule module = null;
@@ -261,15 +261,15 @@ public class ECPlugin {
 
                 if (module != null) {
                     try {
-                        this.logger.info("Enabling module " + module.getInfo().getName() + " v" + module.getInfo().getVersion() + "..");
+                        this.logger.info("Enabling module " + module.getInfo().name() + " v" + module.getInfo().version() + "..");
 
                         ECPluginManager.registerModule(module);
 
                         module.load();
 
-                        this.logger.info("Enabled module " + module.getInfo().getName());
+                        this.logger.info("Enabled module " + module.getInfo().name());
 
-                        this.loadedMap.put(moduleInfo.getName().toLowerCase(), true);
+                        this.loadedMap.put(moduleInfo.name().toLowerCase(), true);
                         return true;
                     } catch (Exception e) {
                         this.logger.error("Error loading module \"" + file.getFileName() + "\"", e);
@@ -281,25 +281,25 @@ public class ECPlugin {
                 this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Entry class does not extend ECModule");
             }
         } catch (IOException e) {
-            this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Failed to load module (\"" + moduleInfo.getEntry() + "\")");
+            this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Failed to load module (\"" + moduleInfo.entry() + "\")");
         } catch (ClassNotFoundException e) {
-            this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Entry class could not be found (\"" + moduleInfo.getEntry() + "\")");
+            this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Entry class could not be found (\"" + moduleInfo.entry() + "\")");
         }
 
-        this.loadedMap.put(moduleInfo.getName().toLowerCase(), false);
+        this.loadedMap.put(moduleInfo.name().toLowerCase(), false);
         return false;
     }
 
     public void unload() {
         for (ECModule module : List.copyOf(ECPluginManager.getModules())) {
             try {
-                this.logger.info("Disabling module " + module.getInfo().getName() + " v" + module.getInfo().getVersion());
+                this.logger.info("Disabling module " + module.getInfo().name() + " v" + module.getInfo().version());
 
                 module.unload();
 
                 ECPluginManager.unregisterModule(module);
 
-                this.logger.info("Disabled module " + module.getInfo().getName());
+                this.logger.info("Disabled module " + module.getInfo().name());
             } catch (Exception e) {
                 this.logger.error("Error unloading module \"" + module.getName() + "\"", e);
             }
@@ -351,7 +351,7 @@ public class ECPlugin {
             private final @NotNull ECPlugin parent = ECPlugin.this;
 
             @Override
-            public ECModule getModule() {
+            public @NotNull ECModule getModule() {
                 return null;
             }
 
@@ -360,8 +360,8 @@ public class ECPlugin {
                 parent.getPlayerData().players.get(event.getPlayer().getUuid().toString()).uuid = event.getPlayer().getUuid();
                 parent.getPlayerData().players.get(event.getPlayer().getUuid().toString()).name = event.getPlayer().getName();
 
-                if (parent.getPlayerData().players.get(event.getPlayer().getUuid().toString()).displayName == null) {
-                    parent.getPlayerData().players.get(event.getPlayer().getUuid().toString()).displayName = event.getPlayer().getName();
+                if (parent.getPlayerData().players.get(event.getPlayer().getUuid().toString()).nickname == null) {
+                    parent.getPlayerData().players.get(event.getPlayer().getUuid().toString()).nickname = event.getPlayer().getName();
                 }
 
                 parent.saveData();
@@ -375,7 +375,7 @@ public class ECPlugin {
         return this.logger;
     }
 
-    public ECMessenger getMessenger() {
+    public @NotNull ECMessenger getMessenger() {
         return this.messenger;
     }
 
@@ -403,7 +403,7 @@ public class ECPlugin {
         }
     }
 
-    public ParsedObject getTranslations() {
+    public @NotNull ParsedObject getTranslations() {
         return this.translations;
     }
 }

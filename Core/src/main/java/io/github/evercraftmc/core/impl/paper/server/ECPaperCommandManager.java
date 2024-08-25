@@ -133,7 +133,15 @@ public class ECPaperCommandManager implements ECCommandManager {
                 }
             } else if (sender instanceof ConsoleCommandSender) {
                 try {
-                    return this.command.tabComplete(parent.server.getConsole(), Arrays.asList(args));
+                    List<String> completions = this.command.tabComplete(parent.getServer().getConsole(), Arrays.asList(args));
+
+                    List<String> matches = new ArrayList<>();
+                    for (String string : completions) {
+                        if (string.toLowerCase().startsWith(args[args.length - 1].toLowerCase())) {
+                            matches.add(string);
+                        }
+                    }
+                    return matches;
                 } catch (Exception e) {
                     parent.getServer().getPlugin().getLogger().error("Error while tab-completing command {}.", label, e);
 
@@ -165,6 +173,8 @@ public class ECPaperCommandManager implements ECCommandManager {
     protected final @NotNull Map<String, ECCommand> commands = new HashMap<>();
     protected final @NotNull Map<String, CommandInter> interCommands = new HashMap<>();
 
+    protected final @NotNull Map<String, ECCommand> commandsAndAliases = new HashMap<>();
+
     public ECPaperCommandManager(@NotNull ECPaperServer server) {
         this.server = server;
 
@@ -172,7 +182,7 @@ public class ECPaperCommandManager implements ECCommandManager {
             private final ECPaperCommandManager parent = ECPaperCommandManager.this;
 
             @Override
-            public ECModule getModule() {
+            public @NotNull ECModule getModule() {
                 return null;
             }
 
@@ -198,7 +208,7 @@ public class ECPaperCommandManager implements ECCommandManager {
 
                                 ECPlayer player = parent.server.getOnlinePlayer(uuid);
                                 if (player != null) {
-                                    ECCommand ecCommand = parent.server.getCommandManager().get(command);
+                                    ECCommand ecCommand = parent.server.getCommandManager().getByName(command);
                                     if (ecCommand != null) {
                                         try {
                                             ecCommand.run(player, args, false);
@@ -216,7 +226,8 @@ public class ECPaperCommandManager implements ECCommandManager {
                                 }
 
                                 ECConsole player = parent.server.getConsole();
-                                ECCommand ecCommand = parent.server.getCommandManager().get(command);
+
+                                ECCommand ecCommand = parent.server.getCommandManager().getByName(command);
                                 if (ecCommand != null) {
                                     try {
                                         ecCommand.run(player, args, false);
@@ -246,8 +257,13 @@ public class ECPaperCommandManager implements ECCommandManager {
     }
 
     @Override
-    public @Nullable ECCommand get(@NotNull String name) {
+    public @Nullable ECCommand getByName(@NotNull String name) {
         return this.commands.get(name.toLowerCase());
+    }
+
+    @Override
+    public @Nullable ECCommand getByAlias(@NotNull String name) {
+        return this.commandsAndAliases.get(name.toLowerCase());
     }
 
     @Override
@@ -267,6 +283,11 @@ public class ECPaperCommandManager implements ECCommandManager {
 
             this.commands.put(command.getName().toLowerCase(), command);
             this.interCommands.put(command.getName().toLowerCase(), interCommand);
+
+            this.commandsAndAliases.put(command.getName().toLowerCase(), command);
+            for (String alias : command.getAlias()) {
+                this.commandsAndAliases.put(alias.toLowerCase(), command);
+            }
 
             this.server.getHandle().getCommandMap().register("evercraft", interCommand);
             this.interCommands.get(command.getName().toLowerCase()).register(this.server.getHandle().getCommandMap());
@@ -291,6 +312,11 @@ public class ECPaperCommandManager implements ECCommandManager {
             this.interCommands.remove(command.getName().toLowerCase());
             this.commands.remove(command.getName().toLowerCase());
 
+            this.commandsAndAliases.remove(command.getName().toLowerCase());
+            for (String alias : command.getAlias()) {
+                this.commandsAndAliases.remove(alias.toLowerCase());
+            }
+
             return command;
         } else {
             throw new RuntimeException("Command /" + command.getName() + " is not registered");
@@ -299,7 +325,7 @@ public class ECPaperCommandManager implements ECCommandManager {
 
     @Override
     public void unregisterAll() {
-        for (ECCommand command : this.commands.values()) {
+        for (ECCommand command : List.copyOf(this.commands.values())) {
             this.unregister(command);
         }
     }

@@ -29,7 +29,7 @@ public class ECVelocityPlayer implements ECProxyPlayer {
         this.uuid = data.uuid;
         this.name = data.name;
 
-        this.displayName = ECTextFormatter.translateColors((data.prefix != null ? "&r" + data.prefix + "&r " : "&r") + data.displayName + "&r");
+        this.displayName = ECTextFormatter.translateColors((data.prefix != null ? "&r" + data.prefix + "&r " : "&r") + data.nickname + "&r");
 
         this.parent = null;
         this.handle = null;
@@ -39,7 +39,7 @@ public class ECVelocityPlayer implements ECProxyPlayer {
         this.uuid = data.uuid;
         this.name = data.name;
 
-        this.displayName = ECTextFormatter.translateColors((data.prefix != null ? "&r" + data.prefix + "&r " : "&r") + data.displayName + "&r");
+        this.displayName = ECTextFormatter.translateColors((data.prefix != null ? "&r" + data.prefix + "&r " : "&r") + data.nickname + "&r");
 
         this.parent = parent;
         this.handle = handle;

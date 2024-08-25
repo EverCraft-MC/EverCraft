@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface ECCommand {
-    public ECModule getModule();
+    public @NotNull ECModule getModule();
 
     public @NotNull String getName();
 

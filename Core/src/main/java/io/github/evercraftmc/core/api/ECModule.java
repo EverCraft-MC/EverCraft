@@ -4,9 +4,9 @@ import io.github.evercraftmc.core.ECPlugin;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class ECModule {
-    protected final ECPlugin plugin;
+    protected final @NotNull ECPlugin plugin;
 
-    protected final ECModuleInfo info;
+    protected final @NotNull ECModuleInfo info;
 
     protected ECModule(@NotNull ECPlugin plugin, @NotNull ECModuleInfo info) {
         this.plugin = plugin;
@@ -19,7 +19,7 @@ public abstract class ECModule {
     }
 
     public @NotNull String getName() {
-        return this.getInfo().getName();
+        return this.info.name();
     }
 
     public @NotNull ECModuleInfo getInfo() {

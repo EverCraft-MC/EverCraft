@@ -85,7 +85,7 @@ public class ECModuleClassLoader extends ClassLoader {
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         try {
             return this.getClass().getClassLoader().loadClass(name);
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException ignored) {
         }
 
         String fileName = name.replace(".", "/") + ".class";
@@ -140,7 +140,7 @@ public class ECModuleClassLoader extends ClassLoader {
             if (resources != null && resources.hasMoreElements()) {
                 return resources;
             }
-        } catch (IOException e) {
+        } catch (IOException ignored) {
         }
 
         if (!(this.resourceCatalog.containsKey(name) && !this.resourceCatalog.get(name).isEmpty())) {

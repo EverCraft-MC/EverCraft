@@ -8,7 +8,9 @@ import org.jetbrains.annotations.Nullable;
 public interface ECCommandManager {
     public @NotNull List<ECCommand> getAll();
 
-    public @Nullable ECCommand get(@NotNull String name);
+    public @Nullable ECCommand getByName(@NotNull String name);
+
+    public @Nullable ECCommand getByAlias(@NotNull String name);
 
     public @NotNull ECCommand register(@NotNull ECCommand command);
 

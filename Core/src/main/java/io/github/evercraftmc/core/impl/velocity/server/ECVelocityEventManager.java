@@ -44,6 +44,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 
 public class ECVelocityEventManager implements ECEventManager {
@@ -290,6 +291,7 @@ public class ECVelocityEventManager implements ECEventManager {
                             @Override
                             public void channelRead(ChannelHandlerContext ctx, Object packet) {
                                 if (packet.getClass().getName().equals("com.velocitypowered.proxy.protocol.packet.chat.session.SessionPlayerChatPacket")) {
+                                    // Unsign all ChatPackets
                                     try {
                                         Object newPacket = packet.getClass().getConstructors()[0].newInstance();
 
@@ -322,6 +324,7 @@ public class ECVelocityEventManager implements ECEventManager {
                                         throw new RuntimeException(e);
                                     }
                                 } else if (packet.getClass().getName().equals("com.velocitypowered.proxy.protocol.packet.chat.session.SessionPlayerCommandPacket")) {
+                                    // Unsign all CommandPackets
                                     try {
                                         Object newPacket = packet.getClass().getConstructors()[0].newInstance();
 
@@ -434,8 +437,8 @@ public class ECVelocityEventManager implements ECEventManager {
 
     @Override
     public void unregisterAll() {
-        for (Map.Entry<Class<? extends ECEvent>, List<Map.Entry<ECListener, Method>>> classEntry : this.listeners.entrySet()) {
-            for (ECListener listener : classEntry.getValue().stream().map(Map.Entry::getKey).toList()) {
+        for (Map.Entry<Class<? extends ECEvent>, List<Map.Entry<ECListener, Method>>> classEntry : List.copyOf(this.listeners.entrySet())) {
+            for (ECListener listener : classEntry.getValue().stream().map(Map.Entry::getKey).collect(Collectors.toSet())) {
                 this.unregister(listener);
             }
         }

@@ -19,7 +19,7 @@ public class PlayerChatEvent extends ECCancelableReasonEvent {
         this.type = type;
 
         this.message = message;
-        this.recipients = recipients;
+        this.recipients = List.copyOf(recipients);
     }
 
     public @NotNull ECPlayer getPlayer() {
@@ -43,7 +43,7 @@ public class PlayerChatEvent extends ECCancelableReasonEvent {
     }
 
     public void setRecipients(@NotNull List<ECPlayer> recipients) {
-        this.recipients = recipients;
+        this.recipients = List.copyOf(recipients);
     }
 
     public static class MessageType {

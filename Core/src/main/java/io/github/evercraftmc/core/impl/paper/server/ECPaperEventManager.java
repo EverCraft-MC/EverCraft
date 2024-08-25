@@ -14,6 +14,7 @@ import io.github.evercraftmc.core.impl.util.ECTextFormatter;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import org.bukkit.GameRule;
 import org.bukkit.event.EventHandler;
@@ -245,8 +246,8 @@ public class ECPaperEventManager implements ECEventManager {
 
     @Override
     public void unregisterAll() {
-        for (Map.Entry<Class<? extends ECEvent>, List<Map.Entry<ECListener, Method>>> classEntry : this.listeners.entrySet()) {
-            for (ECListener listener : classEntry.getValue().stream().map(Map.Entry::getKey).toList()) {
+        for (Map.Entry<Class<? extends ECEvent>, List<Map.Entry<ECListener, Method>>> classEntry : List.copyOf(this.listeners.entrySet())) {
+            for (ECListener listener : classEntry.getValue().stream().map(Map.Entry::getKey).collect(Collectors.toSet())) {
                 this.unregister(listener);
             }
         }

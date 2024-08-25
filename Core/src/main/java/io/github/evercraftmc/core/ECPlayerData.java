@@ -1,14 +1,17 @@
 package io.github.evercraftmc.core;
 
+import io.github.kale_ko.bjsl.processor.annotations.Rename;
 import java.net.InetAddress;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ECPlayerData {
     // Core
-    public Map<String, Player> players = new HashMap<>();
+    public @NotNull Map<String, Player> players = new HashMap<>();
 
     // Moderation
     public boolean chatLocked = false;
@@ -16,11 +19,11 @@ public class ECPlayerData {
 
     public static class Player {
         // Core
-        public UUID uuid;
-        public String name;
+        public @NotNull UUID uuid;
+        public @NotNull String name;
 
-        public String displayName;
-        public String prefix = null;
+        @Rename("displayName") public String nickname;
+        public String prefix;
 
         // Global
         public InetAddress lastIp = null;
@@ -30,11 +33,11 @@ public class ECPlayerData {
         public long playTime = 0;
 
         // Moderation
-        public boolean staffChat = false;
-        public boolean commandSpy = false;
+        public boolean staffChatEnabled = false;
+        public boolean commandSpyEnabled = false;
 
-        public Moderation ban = null;
-        public Moderation mute = null;
+        public @Nullable Moderation currentBan = null;
+        public @Nullable Moderation currentMute = null;
 
         public static class Moderation {
             public UUID moderator;
@@ -44,15 +47,17 @@ public class ECPlayerData {
             public Instant until;
         }
 
-        private Player() {
+        @SuppressWarnings("DataFlowIssue")
+        private Player() { // Required for serialization
             this(null, null);
         }
 
-        public Player(UUID uuid, String name) {
+        public Player(@NotNull UUID uuid, @NotNull String name) {
             this.uuid = uuid;
             this.name = name;
 
-            this.displayName = name;
+            this.nickname = name;
+            this.prefix = null;
         }
     }
 }

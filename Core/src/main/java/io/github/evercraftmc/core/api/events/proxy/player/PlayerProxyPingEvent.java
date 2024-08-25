@@ -68,7 +68,7 @@ public class PlayerProxyPingEvent extends ECEvent {
     }
 
     public void setPlayers(@NotNull Map<UUID, String> players) {
-        this.players = players;
+        this.players = Map.copyOf(players);
     }
 
     public @Nullable InetAddress getAddress() {
