@@ -19,7 +19,7 @@ public abstract class ECModule {
     }
 
     public @NotNull String getName() {
-        return this.info.name();
+        return this.info.getName();
     }
 
     public @NotNull ECModuleInfo getInfo() {

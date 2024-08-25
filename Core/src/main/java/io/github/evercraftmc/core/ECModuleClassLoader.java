@@ -24,8 +24,8 @@ public class ECModuleClassLoader extends ClassLoader {
     }
 
     protected boolean cataloged = false;
-    protected Map<String, List<Path>> resourceCatalog = new HashMap<>();
-    protected Map<String, List<Path>> extractedResourceCatalog = new HashMap<>();
+    protected final Map<String, List<Path>> resourceCatalog = new HashMap<>();
+    protected final Map<String, List<Path>> extractedResourceCatalog = new HashMap<>();
 
     protected synchronized void catalogAll() throws IOException {
         if (this.cataloged) {

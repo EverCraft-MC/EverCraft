@@ -185,7 +185,7 @@ public class ECPlugin {
 
                     if (moduleInfo != null) {
                         this.moduleInfoMap.put(file, moduleInfo);
-                        this.fileMap.put(moduleInfo.name().toLowerCase(), file);
+                        this.fileMap.put(moduleInfo.getName().toLowerCase(), file);
                     } else {
                         this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Jar does not contain a module file (evercraft.yml)");
                     }
@@ -204,26 +204,26 @@ public class ECPlugin {
     }
 
     protected boolean loadModule(@NotNull Path file, @NotNull ECModuleInfo moduleInfo) {
-        if (this.loadedMap.containsKey(moduleInfo.name().toLowerCase())) {
-            return this.loadedMap.get(moduleInfo.name().toLowerCase());
+        if (this.loadedMap.containsKey(moduleInfo.getName().toLowerCase())) {
+            return this.loadedMap.get(moduleInfo.getName().toLowerCase());
         }
 
-        if (moduleInfo.name() == null || moduleInfo.version() == null || moduleInfo.entry() == null) {
+        if (moduleInfo.getName() == null || moduleInfo.getVersion() == null || moduleInfo.getEntry() == null) {
             this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Module info is missing fields");
 
-            this.loadedMap.put(moduleInfo.name().toLowerCase(), false);
+            this.loadedMap.put(moduleInfo.getName().toLowerCase(), false);
             return false;
         }
 
-        if (moduleInfo.environment() != null && !(moduleInfo.environment().trim().equalsIgnoreCase(this.getEnvironment().toString()) || moduleInfo.environment().trim().equalsIgnoreCase(this.getEnvironment().getType().toString()))) {
+        if (moduleInfo.getEnvironment() != null && !(moduleInfo.getEnvironment().trim().equalsIgnoreCase(this.getEnvironment().toString()) || moduleInfo.getEnvironment().trim().equalsIgnoreCase(this.getEnvironment().getType().toString()))) {
             this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Module is in incorrect environment");
 
-            this.loadedMap.put(moduleInfo.name().toLowerCase(), false);
+            this.loadedMap.put(moduleInfo.getName().toLowerCase(), false);
             return false;
         }
 
-        if (moduleInfo.depends() != null) {
-            for (String depend : moduleInfo.depends()) {
+        if (moduleInfo.getDepends() != null) {
+            for (String depend : moduleInfo.getDepends()) {
                 if (depend.equalsIgnoreCase("Core")) {
                     continue;
                 }
@@ -233,9 +233,9 @@ public class ECPlugin {
 
                 boolean loaded = this.loadModule(file2, moduleInfo2);
                 if (!loaded) {
-                    this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Dependency \"" + moduleInfo2.name() + "\" failed to load");
+                    this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Dependency \"" + moduleInfo2.getName() + "\" failed to load");
 
-                    this.loadedMap.put(moduleInfo.name().toLowerCase(), false);
+                    this.loadedMap.put(moduleInfo.getName().toLowerCase(), false);
                     return false;
                 }
             }
@@ -244,7 +244,7 @@ public class ECPlugin {
         try {
             ECModuleClassLoader moduleClassLoader = new ECModuleClassLoader(file);
             moduleClassLoader.catalogAll();
-            Class<?> moduleClass = moduleClassLoader.loadClass(moduleInfo.entry());
+            Class<?> moduleClass = moduleClassLoader.loadClass(moduleInfo.getEntry());
 
             if (ECModule.class.isAssignableFrom(moduleClass)) {
                 ECModule module = null;
@@ -261,15 +261,15 @@ public class ECPlugin {
 
                 if (module != null) {
                     try {
-                        this.logger.info("Enabling module " + module.getInfo().name() + " v" + module.getInfo().version() + "..");
+                        this.logger.info("Enabling module " + module.getInfo().getName() + " v" + module.getInfo().getVersion() + "..");
 
                         ECPluginManager.registerModule(module);
 
                         module.load();
 
-                        this.logger.info("Enabled module " + module.getInfo().name());
+                        this.logger.info("Enabled module " + module.getInfo().getName());
 
-                        this.loadedMap.put(moduleInfo.name().toLowerCase(), true);
+                        this.loadedMap.put(moduleInfo.getName().toLowerCase(), true);
                         return true;
                     } catch (Exception e) {
                         this.logger.error("Error loading module \"" + file.getFileName() + "\"", e);
@@ -281,25 +281,25 @@ public class ECPlugin {
                 this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Entry class does not extend ECModule");
             }
         } catch (IOException e) {
-            this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Failed to load module (\"" + moduleInfo.entry() + "\")");
+            this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Failed to load module (\"" + moduleInfo.getEntry() + "\")");
         } catch (ClassNotFoundException e) {
-            this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Entry class could not be found (\"" + moduleInfo.entry() + "\")");
+            this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Entry class could not be found (\"" + moduleInfo.getEntry() + "\")");
         }
 
-        this.loadedMap.put(moduleInfo.name().toLowerCase(), false);
+        this.loadedMap.put(moduleInfo.getName().toLowerCase(), false);
         return false;
     }
 
     public void unload() {
         for (ECModule module : List.copyOf(ECPluginManager.getModules())) {
             try {
-                this.logger.info("Disabling module " + module.getInfo().name() + " v" + module.getInfo().version());
+                this.logger.info("Disabling module " + module.getInfo().getName() + " v" + module.getInfo().getVersion());
 
                 module.unload();
 
                 ECPluginManager.unregisterModule(module);
 
-                this.logger.info("Disabled module " + module.getInfo().name());
+                this.logger.info("Disabled module " + module.getInfo().getName());
             } catch (Exception e) {
                 this.logger.error("Error unloading module \"" + module.getName() + "\"", e);
             }
@@ -350,6 +350,7 @@ public class ECPlugin {
         this.server.getEventManager().register(new ECListener() {
             private final @NotNull ECPlugin parent = ECPlugin.this;
 
+            @SuppressWarnings("DataFlowIssue")
             @Override
             public @NotNull ECModule getModule() {
                 return null;

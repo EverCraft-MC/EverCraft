@@ -181,6 +181,7 @@ public class ECPaperCommandManager implements ECCommandManager {
         this.server.getEventManager().register(new ECListener() {
             private final ECPaperCommandManager parent = ECPaperCommandManager.this;
 
+            @SuppressWarnings("DataFlowIssue")
             @Override
             public @NotNull ECModule getModule() {
                 return null;

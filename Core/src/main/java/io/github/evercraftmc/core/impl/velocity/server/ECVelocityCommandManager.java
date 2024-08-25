@@ -184,6 +184,7 @@ public class ECVelocityCommandManager implements ECCommandManager {
         this.server.getEventManager().register(new ECListener() {
             private final ECVelocityCommandManager parent = ECVelocityCommandManager.this;
 
+            @SuppressWarnings("DataFlowIssue")
             @Override
             public @NotNull ECModule getModule() {
                 return null;
