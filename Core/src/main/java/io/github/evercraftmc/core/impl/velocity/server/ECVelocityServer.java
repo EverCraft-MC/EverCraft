@@ -53,7 +53,7 @@ public class ECVelocityServer implements ECProxyServer {
 
     @Override
     public @NotNull String getAllMinecraftVersions() {
-        return "1.8-" + this.getMinecraftVersion();
+        return "1.13-" + this.getMinecraftVersion();
     }
 
     @Override

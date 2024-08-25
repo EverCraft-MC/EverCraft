@@ -1,6 +1,7 @@
 package io.github.evercraftmc.core.api.events.proxy.player;
 
 import io.github.evercraftmc.core.api.events.ECEvent;
+import java.awt.image.BufferedImage;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -12,6 +13,8 @@ public class PlayerProxyPingEvent extends ECEvent {
     protected @NotNull String motd;
     protected boolean centerMotd;
 
+    protected @Nullable BufferedImage favicon;
+
     protected int onlinePlayers;
     protected int maxPlayers;
     protected @NotNull Map<UUID, String> players;
@@ -19,9 +22,11 @@ public class PlayerProxyPingEvent extends ECEvent {
     protected final @Nullable InetAddress address;
     protected final @Nullable InetSocketAddress serverAddress;
 
-    public PlayerProxyPingEvent(@NotNull String motd, boolean centerMotd, int onlinePlayers, int maxPlayers, @NotNull Map<UUID, String> players, @Nullable InetAddress address, @Nullable InetSocketAddress serverAddress) {
+    public PlayerProxyPingEvent(@NotNull String motd, boolean centerMotd, @Nullable BufferedImage favicon, int onlinePlayers, int maxPlayers, @NotNull Map<UUID, String> players, @Nullable InetAddress address, @Nullable InetSocketAddress serverAddress) {
         this.motd = motd;
         this.centerMotd = centerMotd;
+
+        this.favicon = favicon;
 
         this.onlinePlayers = onlinePlayers;
         this.maxPlayers = maxPlayers;
@@ -45,6 +50,14 @@ public class PlayerProxyPingEvent extends ECEvent {
 
     public void setCenterMotd(boolean centerMotd) {
         this.centerMotd = centerMotd;
+    }
+
+    public @Nullable BufferedImage getFavicon() {
+        return this.favicon;
+    }
+
+    public void setFavicon(@Nullable BufferedImage favicon) {
+        this.favicon = favicon;
     }
 
     public int getOnlinePlayers() {

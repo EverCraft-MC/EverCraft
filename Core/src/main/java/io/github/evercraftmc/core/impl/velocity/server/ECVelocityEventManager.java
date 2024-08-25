@@ -13,6 +13,7 @@ import com.velocitypowered.api.event.player.ServerPreConnectEvent;
 import com.velocitypowered.api.event.proxy.ProxyPingEvent;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.ServerPing;
+import com.velocitypowered.api.util.Favicon;
 import io.github.evercraftmc.core.ECPlayerData;
 import io.github.evercraftmc.core.api.events.ECEvent;
 import io.github.evercraftmc.core.api.events.ECHandler;
@@ -35,7 +36,11 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -45,6 +50,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.imageio.ImageIO;
 import org.jetbrains.annotations.NotNull;
 
 public class ECVelocityEventManager implements ECEventManager {
@@ -172,7 +178,26 @@ public class ECVelocityEventManager implements ECEventManager {
                 }
             }
 
-            PlayerProxyPingEvent newEvent = new PlayerProxyPingEvent(ECComponentFormatter.componentToString(event.getPing().getDescriptionComponent()), false, pingPlayers.isPresent() ? pingPlayers.get().getOnline() : -1, pingPlayers.isPresent() ? pingPlayers.get().getMax() : -1, players, event.getConnection().getRemoteAddress().getAddress(), event.getConnection().getVirtualHost().orElse(null));
+            BufferedImage favicon = null;
+
+            Optional<Favicon> pingFavicon = event.getPing().getFavicon();
+            if (pingFavicon.isPresent()) {
+                String bash64Url = pingFavicon.get().getBase64Url();
+                if (bash64Url.startsWith("data:image/png;base64,")) {
+                    String bash64 = bash64Url.substring("data:image/png;base64,".length());
+                    byte[] data = Base64.getDecoder().decode(bash64);
+
+                    try (InputStream byteArrayInputStream = new ByteArrayInputStream(data)) {
+                        favicon = ImageIO.read(byteArrayInputStream);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    throw new RuntimeException("Favicon isn't a PNG!");
+                }
+            }
+
+            PlayerProxyPingEvent newEvent = new PlayerProxyPingEvent(ECComponentFormatter.componentToString(event.getPing().getDescriptionComponent()), false, favicon, pingPlayers.isPresent() ? pingPlayers.get().getOnline() : -1, pingPlayers.isPresent() ? pingPlayers.get().getMax() : -1, players, event.getConnection().getRemoteAddress().getAddress(), event.getConnection().getVirtualHost().orElse(null));
             parent.emit(newEvent);
 
             ServerPing.Builder serverPing = ServerPing.builder();
@@ -196,6 +221,23 @@ public class ECVelocityEventManager implements ECEventManager {
                 newPlayers.add(new ServerPing.SamplePlayer(entry.getValue(), entry.getKey()));
             }
             serverPing.samplePlayers(newPlayers.toArray(new ServerPing.SamplePlayer[] { }));
+
+            if (newEvent.getFavicon() != null) {
+                try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                    ImageIO.write(newEvent.getFavicon(), "PNG", outputStream);
+
+                    String base64 = Base64.getEncoder().encodeToString(outputStream.toByteArray());
+                    String base64Url = "data:image/png;base64," + base64;
+
+                    serverPing.favicon(new Favicon(base64Url));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                serverPing.clearFavicon();
+            }
+
+            serverPing.clearMods();
 
             event.setPing(serverPing.build());
         }
