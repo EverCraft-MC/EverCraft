@@ -16,7 +16,6 @@ import io.github.kale_ko.bjsl.processor.ObjectProcessor;
 import io.github.kale_ko.ejcl.file.bjsl.StructuredBJSLFileConfig;
 import io.github.kale_ko.ejcl.mysql.StructuredMySQLConfig;
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -38,14 +37,14 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 public class ECPlugin {
-    private static class MessagingDetails {
+    protected static class MessagingDetails {
         public String host = "127.0.0.1";
         public short port = 3000;
 
         public UUID id = null;
     }
 
-    private static class MySQLDetails {
+    protected static class MySQLDetails {
         public String host;
         public short port;
 
@@ -57,8 +56,8 @@ public class ECPlugin {
 
     protected final @NotNull Object handle;
 
-    protected final @NotNull File pluginFile;
-    protected final @NotNull File dataDirectory;
+    protected final @NotNull Path pluginFile;
+    protected final @NotNull Path dataDirectory;
 
     protected final @NotNull ECEnvironment environment;
     protected ECServer server;
@@ -71,7 +70,7 @@ public class ECPlugin {
 
     protected ParsedObject translations;
 
-    public ECPlugin(@NotNull Object handle, @NotNull File pluginFile, @NotNull File dataDirectory, @NotNull ECEnvironment environment, @NotNull Logger logger, @NotNull ClassLoader classLoader) {
+    public ECPlugin(@NotNull Object handle, @NotNull Path pluginFile, @NotNull Path dataDirectory, @NotNull ECEnvironment environment, @NotNull Logger logger, @NotNull ClassLoader classLoader) {
         this.handle = handle;
 
         this.pluginFile = pluginFile;
@@ -95,8 +94,8 @@ public class ECPlugin {
         ECPluginManager.registerPlugin(this);
 
         try {
-            if (!Files.exists(this.getDataDirectory().toPath())) {
-                Files.createDirectories(this.getDataDirectory().toPath());
+            if (!Files.exists(this.getDataDirectory())) {
+                Files.createDirectories(this.getDataDirectory());
             }
         } catch (Exception e) {
             this.logger.error("Failed to create data dir", e);
@@ -104,7 +103,7 @@ public class ECPlugin {
         }
 
         try {
-            StructuredBJSLFileConfig<MessagingDetails> messagingDetails = new StructuredBJSLFileConfig.Builder<>(MessagingDetails.class, this.dataDirectory.toPath().resolve("messaging.yml").toFile(), new YamlParser.Builder().build()).build();
+            StructuredBJSLFileConfig<MessagingDetails> messagingDetails = new StructuredBJSLFileConfig.Builder<>(MessagingDetails.class, this.dataDirectory.resolve("messaging.yml").toFile(), new YamlParser.Builder().build()).build();
             messagingDetails.load(true);
             if (messagingDetails.get().id == null) {
                 messagingDetails.get().id = UUID.fromString(System.getProperty("serverID"));
@@ -119,7 +118,7 @@ public class ECPlugin {
         }
 
         try {
-            StructuredBJSLFileConfig<MySQLDetails> mysqlDetails = new StructuredBJSLFileConfig.Builder<>(MySQLDetails.class, this.dataDirectory.toPath().resolve("mysql.yml").toFile(), new YamlParser.Builder().build()).build();
+            StructuredBJSLFileConfig<MySQLDetails> mysqlDetails = new StructuredBJSLFileConfig.Builder<>(MySQLDetails.class, this.dataDirectory.resolve("mysql.yml").toFile(), new YamlParser.Builder().build()).build();
             mysqlDetails.load(true);
 
             this.logger.info("Connecting to MySQL server..");
@@ -156,7 +155,7 @@ public class ECPlugin {
         }
 
         try {
-            Path modulesDirectory = this.getDataDirectory().toPath().resolve("modules");
+            Path modulesDirectory = this.getDataDirectory().resolve("modules");
             if (!Files.exists(modulesDirectory)) {
                 Files.createDirectories(modulesDirectory);
             }
@@ -215,7 +214,7 @@ public class ECPlugin {
             return false;
         }
 
-        if (moduleInfo.getEnvironment() != null && !(moduleInfo.getEnvironment().trim().equalsIgnoreCase(this.getEnvironment().toString()) || moduleInfo.getEnvironment().trim().equalsIgnoreCase(this.getEnvironment().getType().toString()))) {
+        if (moduleInfo.getEnvironment() != null && !(moduleInfo.getEnvironment().trim().equalsIgnoreCase(this.getEnvironment().toString()) || moduleInfo.getEnvironment().trim().equalsIgnoreCase(this.getEnvironmentType().toString()))) {
             this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Module is in incorrect environment");
 
             this.loadedMap.put(moduleInfo.getName().toLowerCase(), false);
@@ -324,11 +323,11 @@ public class ECPlugin {
         return this.handle;
     }
 
-    public @NotNull File getPluginFile() {
+    public @NotNull Path getPluginFile() {
         return this.pluginFile;
     }
 
-    public @NotNull File getDataDirectory() {
+    public @NotNull Path getDataDirectory() {
         return this.dataDirectory;
     }
 
@@ -340,7 +339,7 @@ public class ECPlugin {
         return this.environment.getType();
     }
 
-    public ECServer getServer() {
+    public @NotNull ECServer getServer() {
         return this.server;
     }
 

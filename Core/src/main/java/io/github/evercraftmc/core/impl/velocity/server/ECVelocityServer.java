@@ -7,6 +7,7 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import io.github.evercraftmc.core.ECPlayerData;
 import io.github.evercraftmc.core.ECPlugin;
 import io.github.evercraftmc.core.api.server.ECProxyServer;
+import io.github.evercraftmc.core.api.server.ECServerInfo;
 import io.github.evercraftmc.core.impl.ECEnvironment;
 import io.github.evercraftmc.core.impl.ECEnvironmentType;
 import io.github.evercraftmc.core.impl.velocity.server.player.ECVelocityConsole;
@@ -72,7 +73,7 @@ public class ECVelocityServer implements ECProxyServer {
     }
 
     @Override
-    public @NotNull Collection<ECVelocityPlayer> getPlayers() {
+    public @NotNull @Unmodifiable Collection<ECVelocityPlayer> getPlayers() {
         ArrayList<ECVelocityPlayer> players = new ArrayList<>();
 
         for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) {
@@ -83,7 +84,7 @@ public class ECVelocityServer implements ECProxyServer {
     }
 
     @Override
-    public ECVelocityPlayer getPlayer(@NotNull UUID uuid) {
+    public @Nullable ECVelocityPlayer getPlayer(@NotNull UUID uuid) {
         if (this.plugin.getPlayerData().players.containsKey(uuid.toString())) {
             return new ECVelocityPlayer(this.plugin.getPlayerData().players.get(uuid.toString()));
         }
@@ -92,7 +93,7 @@ public class ECVelocityServer implements ECProxyServer {
     }
 
     @Override
-    public ECVelocityPlayer getPlayer(@NotNull String name) {
+    public @Nullable ECVelocityPlayer getPlayer(@NotNull String name) {
         for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) { // TODO Name -> UUID map
             if (player.name.equalsIgnoreCase(name)) {
                 return new ECVelocityPlayer(player);
@@ -103,7 +104,7 @@ public class ECVelocityServer implements ECProxyServer {
     }
 
     @Override
-    public @NotNull Collection<ECVelocityPlayer> getOnlinePlayers() {
+    public @NotNull @Unmodifiable Collection<ECVelocityPlayer> getOnlinePlayers() {
         ArrayList<ECVelocityPlayer> players = new ArrayList<>();
 
         for (Player velocityPlayer : this.handle.getAllPlayers()) {
@@ -116,7 +117,7 @@ public class ECVelocityServer implements ECProxyServer {
     }
 
     @Override
-    public ECVelocityPlayer getOnlinePlayer(@NotNull UUID uuid) {
+    public @Nullable ECVelocityPlayer getOnlinePlayer(@NotNull UUID uuid) {
         Optional<Player> velocityPlayer = this.handle.getPlayer(uuid);
         if (velocityPlayer.isPresent() && this.plugin.getPlayerData().players.containsKey(uuid.toString())) {
             return new ECVelocityPlayer(this.plugin.getPlayerData().players.get(uuid.toString()), this, velocityPlayer.get());
@@ -126,7 +127,7 @@ public class ECVelocityServer implements ECProxyServer {
     }
 
     @Override
-    public ECVelocityPlayer getOnlinePlayer(@NotNull String name) {
+    public @Nullable ECVelocityPlayer getOnlinePlayer(@NotNull String name) {
         Optional<Player> velocityPlayer = this.handle.getPlayer(name);
         if (velocityPlayer.isPresent()) {
             for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) { // TODO Name -> UUID map
@@ -140,29 +141,33 @@ public class ECVelocityServer implements ECProxyServer {
     }
 
     @Override
-    public @NotNull @Unmodifiable List<Server> getServers() {
-        List<Server> servers = new ArrayList<>();
+    public @NotNull @Unmodifiable List<ECServerInfo> getServers() {
+        List<ECServerInfo> servers = new ArrayList<>();
 
         for (RegisteredServer serverHandle : this.handle.getAllServers()) {
-            servers.add(new Server(serverHandle.getServerInfo().getName(), serverHandle.getServerInfo().getAddress()));
+            servers.add(new ECServerInfo(serverHandle.getServerInfo().getName(), serverHandle.getServerInfo().getAddress()));
         }
 
         return Collections.unmodifiableList(servers);
     }
 
     @Override
-    public @Nullable Server getServer(@NotNull String name) {
+    public @Nullable ECServerInfo getServer(@NotNull String name) {
         Optional<RegisteredServer> server = this.handle.getServer(name);
         if (server.isPresent()) {
-            return new Server(server.get().getServerInfo().getName(), server.get().getServerInfo().getAddress());
+            return new ECServerInfo(server.get().getServerInfo().getName(), server.get().getServerInfo().getAddress());
         } else {
             return null;
         }
     }
 
     @Override
-    public @NotNull Server getDefaultServer() {
-        Server server = this.getServer(this.handle.getConfiguration().getAttemptConnectionOrder().get(0));
+    public @NotNull ECServerInfo getDefaultServer() {
+        List<String> connectionOrder = this.handle.getConfiguration().getAttemptConnectionOrder();
+        if (connectionOrder.size() <= 0) {
+            throw new NullPointerException("defaultServer");
+        }
+        ECServerInfo server = this.getServer(connectionOrder.get(0));
         if (server == null) {
             throw new NullPointerException("defaultServer");
         }
@@ -170,8 +175,12 @@ public class ECVelocityServer implements ECProxyServer {
     }
 
     @Override
-    public @NotNull Server getFallbackServer() {
-        Server server = this.getServer(this.handle.getConfiguration().getAttemptConnectionOrder().get(this.handle.getConfiguration().getAttemptConnectionOrder().size() - 1));
+    public @NotNull ECServerInfo getFallbackServer() {
+        List<String> connectionOrder = this.handle.getConfiguration().getAttemptConnectionOrder();
+        if (connectionOrder.size() <= 1) {
+            throw new NullPointerException("fallbackServer");
+        }
+        ECServerInfo server = this.getServer(connectionOrder.get(connectionOrder.size() - 1));
         if (server == null) {
             throw new NullPointerException("fallbackServer");
         }

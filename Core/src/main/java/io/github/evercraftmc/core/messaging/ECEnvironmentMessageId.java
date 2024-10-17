@@ -25,12 +25,13 @@ public class ECEnvironmentMessageId extends ECMessageId {
             return this.parsedValue == environment;
         } else if (match instanceof ECServer server) {
             return this.parsedValue == server.getEnvironment();
+        } else {
+            return false;
         }
-        return false;
     }
 
     public static void register() {
-        ECMessageId.addParser("ENVIRONMENT", (string) -> {
+        ECMessageId.addParser("ENVIRONMENT", string -> {
             return new ECEnvironmentMessageId(ECEnvironment.valueOf(string));
         });
     }

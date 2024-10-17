@@ -79,15 +79,14 @@ public class ECPaperPlayer implements ECPlayer {
     public void setOnlineDisplayName(@NotNull String displayName) {
         this.setDisplayName(displayName);
 
-        this.handle.customName(ECComponentFormatter.stringToComponent(displayName));
         this.handle.displayName(ECComponentFormatter.stringToComponent(displayName));
+        this.handle.customName(ECComponentFormatter.stringToComponent(displayName));
         this.handle.playerListName(ECComponentFormatter.stringToComponent(displayName));
     }
 
     @Override
     public @Nullable InetAddress getAddress() {
         InetSocketAddress socketAddress = this.handle.getAddress();
-
         if (socketAddress != null) {
             return socketAddress.getAddress();
         } else {

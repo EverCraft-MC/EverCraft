@@ -4,7 +4,7 @@ import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import io.github.evercraftmc.core.ECPlayerData;
-import io.github.evercraftmc.core.api.server.ECProxyServer;
+import io.github.evercraftmc.core.api.server.ECServerInfo;
 import io.github.evercraftmc.core.api.server.player.ECProxyPlayer;
 import io.github.evercraftmc.core.impl.util.ECComponentFormatter;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
@@ -89,7 +89,6 @@ public class ECVelocityPlayer implements ECProxyPlayer {
     @Override
     public @Nullable InetAddress getAddress() {
         InetSocketAddress socketAddress = this.handle.getRemoteAddress();
-
         if (socketAddress != null) {
             return socketAddress.getAddress();
         } else {
@@ -103,20 +102,18 @@ public class ECVelocityPlayer implements ECProxyPlayer {
     }
 
     @Override
-    public @Nullable ECProxyServer.Server getServer() {
+    public @Nullable ECServerInfo getServer() {
         Optional<ServerConnection> server = this.handle.getCurrentServer();
-
         if (server.isPresent()) {
-            return new ECProxyServer.Server(server.get().getServerInfo().getName(), server.get().getServerInfo().getAddress());
+            return new ECServerInfo(server.get().getServerInfo().getName(), server.get().getServerInfo().getAddress());
         } else {
             return null;
         }
     }
 
     @Override
-    public void setServer(@NotNull ECProxyServer.Server server) {
+    public void setServer(@NotNull ECServerInfo server) {
         Optional<RegisteredServer> serverHandle = parent.getHandle().getServer(server.name());
-
         if (serverHandle.isPresent()) {
             this.handle.createConnectionRequest(serverHandle.get()).connectWithIndication();
         } else {

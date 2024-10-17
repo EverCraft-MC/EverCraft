@@ -4,12 +4,13 @@ import java.util.Collections;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 public class ECModuleInfo {
-    protected String name;
-    protected String version;
+    protected @Nullable String name;
+    protected @Nullable String version;
 
-    protected String entry;
+    protected @Nullable String entry;
 
     protected @Nullable String environment;
     protected @Nullable List<String> depends;
@@ -59,7 +60,7 @@ public class ECModuleInfo {
         return this.environment;
     }
 
-    public @Nullable List<String> getDepends() {
+    public @Nullable @Unmodifiable List<String> getDepends() {
         return this.depends != null ? Collections.unmodifiableList(this.depends) : null;
     }
 }

@@ -6,13 +6,13 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.jetbrains.annotations.NotNull;
 
 public class ECPaperConsole implements ECConsole {
-    protected final @NotNull ConsoleCommandSender handle;
+    protected final ConsoleCommandSender handle;
 
-    public ECPaperConsole(@NotNull ConsoleCommandSender handle) {
+    public ECPaperConsole(ConsoleCommandSender handle) {
         this.handle = handle;
     }
 
-    public @NotNull ConsoleCommandSender getHandle() {
+    public ConsoleCommandSender getHandle() {
         return this.handle;
     }
 

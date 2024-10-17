@@ -30,12 +30,13 @@ public class ECUUIDMessageId extends ECMessageId {
             return this.parsedValue.equals(plugin.getMessenger().getId());
         } else if (match instanceof ECMessenger messenger) {
             return this.parsedValue.equals(messenger.getId());
+        } else {
+            return false;
         }
-        return false;
     }
 
     public static void register() {
-        ECMessageId.addParser("UUID", (string) -> {
+        ECMessageId.addParser("UUID", string -> {
             return new ECUUIDMessageId(UUID.fromString(string));
         });
     }

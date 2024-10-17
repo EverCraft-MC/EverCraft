@@ -19,7 +19,7 @@ public class ECAllMessageId extends ECMessageId {
     }
 
     public static void register() {
-        ECMessageId.addParser("ALL", (string) -> {
+        ECMessageId.addParser("ALL", string -> {
             return new ECAllMessageId();
         });
     }

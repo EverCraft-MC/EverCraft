@@ -1,20 +1,28 @@
 package io.github.evercraftmc.core.impl.paper.server;
 
+import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
+import com.velocitypowered.api.proxy.server.ServerPing;
 import io.github.evercraftmc.core.ECPlayerData;
 import io.github.evercraftmc.core.api.events.ECEvent;
 import io.github.evercraftmc.core.api.events.ECHandler;
 import io.github.evercraftmc.core.api.events.ECListener;
 import io.github.evercraftmc.core.api.events.player.PlayerChatEvent;
 import io.github.evercraftmc.core.api.events.player.PlayerCommandEvent;
+import io.github.evercraftmc.core.api.events.player.ServerPingEvent;
 import io.github.evercraftmc.core.api.server.ECEventManager;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
 import io.github.evercraftmc.core.impl.paper.server.player.ECPaperPlayer;
 import io.github.evercraftmc.core.impl.util.ECComponentFormatter;
 import io.github.evercraftmc.core.impl.util.ECTextFormatter;
 import io.papermc.paper.event.player.AsyncChatEvent;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.stream.Collectors;
+import javax.imageio.ImageIO;
 import net.kyori.adventure.text.Component;
 import org.bukkit.GameRule;
 import org.bukkit.event.EventHandler;
@@ -24,6 +32,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.util.CachedServerIcon;
 import org.jetbrains.annotations.NotNull;
 
 public class ECPaperEventManager implements ECEventManager {
@@ -71,6 +80,80 @@ public class ECPaperEventManager implements ECEventManager {
             if (!newEvent.getLeaveMessage().isEmpty()) {
                 parent.server.broadcastMessage(newEvent.getLeaveMessage());
             }
+        }
+
+        @EventHandler(priority=EventPriority.HIGH)
+        public void onPlayerServerConnect(@NotNull PaperServerListPingEvent event) {
+            Map<UUID, String> players = new HashMap<>();
+
+            for (PaperServerListPingEvent.ListedPlayerInfo player : event.getListedPlayers()) {
+                players.put(player.id(), player.name());
+            }
+            event.getListedPlayers().clear();
+
+            BufferedImage favicon = null;
+
+            CachedServerIcon pingFavicon = event.getServerIcon();
+            if (pingFavicon != null && pingFavicon.getData() != null) {
+                String bash64Url = pingFavicon.getData();
+                if (bash64Url.startsWith("data:image/png;base64,")) {
+                    String bash64 = bash64Url.substring("data:image/png;base64,".length());
+                    byte[] data = Base64.getDecoder().decode(bash64);
+
+                    try (InputStream byteArrayInputStream = new ByteArrayInputStream(data)) {
+                        favicon = ImageIO.read(byteArrayInputStream);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    throw new RuntimeException("Favicon isn't a PNG!");
+                }
+            }
+
+            ServerPingEvent newEvent = new ServerPingEvent(ECComponentFormatter.componentToString(event.motd()), false, favicon, event.getNumPlayers(), event.getMaxPlayers(), players);
+            parent.emit(newEvent);
+
+            event.setProtocolVersion(event.getProtocolVersion());
+            event.setVersion(parent.getServer().getMinecraftVersion());
+
+            String[] motd = newEvent.getMotd().split("\n");
+            for (int i = 0; i < motd.length; i++) {
+                if (newEvent.getCenterMotd()) {
+                    String padding = " ".repeat((48 - ECTextFormatter.stripColors(motd[i]).length()) / 2);
+                    motd[i] = padding + motd[i] + padding;
+                }
+            }
+            event.motd(ECComponentFormatter.stringToComponent(String.join("\n", motd)));
+
+            event.setNumPlayers(newEvent.getOnlinePlayers());
+            event.setMaxPlayers(newEvent.getMaxPlayers());
+
+            List<ServerPing.SamplePlayer> newPlayers = new ArrayList<>();
+            for (Map.Entry<UUID, String> entry : newEvent.getPlayers().entrySet()) {
+                event.getListedPlayers().add(new PaperServerListPingEvent.ListedPlayerInfo(entry.getValue(), entry.getKey()));
+            }
+
+            if (newEvent.getFavicon() != null) {
+                try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                    ImageIO.write(newEvent.getFavicon(), "PNG", outputStream);
+
+                    String base64 = Base64.getEncoder().encodeToString(outputStream.toByteArray());
+                    String base64Url = "data:image/png;base64," + base64;
+
+                    event.setServerIcon(new CachedServerIcon() {
+                        @Override
+                        public @NotNull String getData() {
+                            return base64Url;
+                        }
+                    });
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                event.setServerIcon(null);
+            }
+
+            event.setHidePlayers(false);
         }
 
         @EventHandler(priority=EventPriority.HIGH)
@@ -211,7 +294,7 @@ public class ECPaperEventManager implements ECEventManager {
         }
 
         for (Method method : listener.getClass().getDeclaredMethods()) {
-            if (method.isAnnotationPresent(ECHandler.class)) {
+            if (method.getDeclaredAnnotationsByType(ECHandler.class).length == 1) {
                 if (method.getParameterCount() == 1 && ECEvent.class.isAssignableFrom(method.getParameterTypes()[0])) {
                     if (!this.listeners.containsKey((Class<? extends ECEvent>) method.getParameterTypes()[0])) {
                         this.listeners.put((Class<? extends ECEvent>) method.getParameterTypes()[0], new ArrayList<>());
@@ -246,9 +329,9 @@ public class ECPaperEventManager implements ECEventManager {
 
     @Override
     public void unregisterAll() {
-        for (Map.Entry<Class<? extends ECEvent>, List<Map.Entry<ECListener, Method>>> classEntry : List.copyOf(this.listeners.entrySet())) {
-            for (ECListener listener : classEntry.getValue().stream().map(Map.Entry::getKey).collect(Collectors.toSet())) {
-                this.unregister(listener);
+        for (List<Map.Entry<ECListener, Method>> listeners : List.copyOf(this.listeners.entrySet()).stream().map(Map.Entry::getValue).toList()) {
+            for (Map.Entry<ECListener, Method> listener : listeners) {
+                this.unregister(listener.getKey());
             }
         }
     }

@@ -1,17 +1,18 @@
 package io.github.evercraftmc.core.api.events.proxy.player;
 
 import io.github.evercraftmc.core.api.events.ECEvent;
+import io.github.evercraftmc.core.api.server.ECServerInfo;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
 import org.jetbrains.annotations.NotNull;
 
 public class PlayerServerConnectedEvent extends ECEvent {
     protected final @NotNull ECPlayer player;
 
-    protected final @NotNull String targetServer;
+    protected final @NotNull ECServerInfo targetServer;
 
     protected @NotNull String connectMessage;
 
-    public PlayerServerConnectedEvent(@NotNull ECPlayer player, @NotNull String targetServer, @NotNull String connectMessage) {
+    public PlayerServerConnectedEvent(@NotNull ECPlayer player, @NotNull ECServerInfo targetServer, @NotNull String connectMessage) {
         this.player = player;
 
         this.targetServer = targetServer;
@@ -23,7 +24,7 @@ public class PlayerServerConnectedEvent extends ECEvent {
         return this.player;
     }
 
-    public @NotNull String getTargetServer() {
+    public @NotNull ECServerInfo getTargetServer() {
         return this.targetServer;
     }
 

@@ -1,5 +1,6 @@
 plugins {
     id "java"
+    id "java-library"
 }
 
 version = core_version
@@ -15,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(":Messaging")
+    api project(":Messaging")
 
     implementation "io.github.kale_ko:ejcl:${ejcl_version}"
 

@@ -6,13 +6,13 @@ import io.github.evercraftmc.core.impl.util.ECComponentFormatter;
 import org.jetbrains.annotations.NotNull;
 
 public class ECVelocityConsole implements ECConsole {
-    protected final @NotNull ConsoleCommandSource handle;
+    protected final ConsoleCommandSource handle;
 
-    public ECVelocityConsole(@NotNull ConsoleCommandSource handle) {
+    public ECVelocityConsole(ConsoleCommandSource handle) {
         this.handle = handle;
     }
 
-    public @NotNull ConsoleCommandSource getHandle() {
+    public ConsoleCommandSource getHandle() {
         return this.handle;
     }
 

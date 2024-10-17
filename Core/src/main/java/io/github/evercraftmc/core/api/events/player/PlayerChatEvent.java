@@ -4,6 +4,7 @@ import io.github.evercraftmc.core.api.events.ECCancelableReasonEvent;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 
 public class PlayerChatEvent extends ECCancelableReasonEvent {
     protected final @NotNull ECPlayer player;
@@ -11,7 +12,7 @@ public class PlayerChatEvent extends ECCancelableReasonEvent {
     protected final int type;
 
     protected @NotNull String message;
-    protected @NotNull List<ECPlayer> recipients;
+    protected @NotNull @Unmodifiable List<ECPlayer> recipients;
 
     public PlayerChatEvent(@NotNull ECPlayer player, int type, @NotNull String message, @NotNull List<ECPlayer> recipients) {
         this.player = player;
@@ -38,7 +39,7 @@ public class PlayerChatEvent extends ECCancelableReasonEvent {
         this.message = message;
     }
 
-    public @NotNull List<ECPlayer> getRecipients() {
+    public @NotNull @Unmodifiable List<ECPlayer> getRecipients() {
         return this.recipients;
     }
 

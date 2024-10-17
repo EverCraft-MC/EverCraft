@@ -44,7 +44,7 @@ public class ECMessenger {
         ECEnvironmentTypeMessageId.register();
 
         this.client = new ECMessagingClient(parent.getLogger(), this.address);
-        this.client.setListener((message) -> {
+        this.client.setListener(message -> {
             parent.getServer().getEventManager().emit(new MessageEvent(this, message));
         });
         this.client.start();

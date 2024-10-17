@@ -11,7 +11,7 @@ public class ECPaperPluginLoader extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        this.plugin = new ECPlugin(this, new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile()), this.getDataFolder().toPath().getParent().resolve("EverCraft").toFile(), ECEnvironment.PAPER, this.getSLF4JLogger(), this.getClass().getClassLoader());
+        this.plugin = new ECPlugin(this, new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile()).toPath(), this.getDataFolder().toPath().getParent().resolve("EverCraft"), ECEnvironment.PAPER, this.getSLF4JLogger(), this.getClass().getClassLoader());
     }
 
     @Override

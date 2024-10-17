@@ -23,6 +23,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 public class ECPaperCommandManager implements ECCommandManager {
     protected class CommandInter extends Command {
@@ -253,7 +254,7 @@ public class ECPaperCommandManager implements ECCommandManager {
     }
 
     @Override
-    public @NotNull List<ECCommand> getAll() {
+    public @NotNull @Unmodifiable List<ECCommand> getAll() {
         return List.copyOf(this.commands.values());
     }
 
@@ -263,8 +264,8 @@ public class ECPaperCommandManager implements ECCommandManager {
     }
 
     @Override
-    public @Nullable ECCommand getByAlias(@NotNull String name) {
-        return this.commandsAndAliases.get(name.toLowerCase());
+    public @Nullable ECCommand getByAlias(@NotNull String alias) {
+        return this.commandsAndAliases.get(alias.toLowerCase());
     }
 
     @Override

@@ -23,10 +23,11 @@ import io.github.evercraftmc.core.api.events.player.PlayerCommandEvent;
 import io.github.evercraftmc.core.api.events.player.PlayerJoinEvent;
 import io.github.evercraftmc.core.api.events.player.PlayerLeaveEvent;
 import io.github.evercraftmc.core.api.events.proxy.player.PlayerProxyJoinEvent;
-import io.github.evercraftmc.core.api.events.proxy.player.PlayerProxyPingEvent;
 import io.github.evercraftmc.core.api.events.proxy.player.PlayerServerConnectEvent;
 import io.github.evercraftmc.core.api.events.proxy.player.PlayerServerConnectedEvent;
+import io.github.evercraftmc.core.api.events.proxy.player.ServerProxyPingEvent;
 import io.github.evercraftmc.core.api.server.ECEventManager;
+import io.github.evercraftmc.core.api.server.ECServerInfo;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
 import io.github.evercraftmc.core.api.server.player.ECProxyPlayer;
 import io.github.evercraftmc.core.impl.util.ECComponentFormatter;
@@ -49,7 +50,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import org.jetbrains.annotations.NotNull;
 
@@ -61,7 +61,7 @@ public class ECVelocityEventManager implements ECEventManager {
 
         public VelocityListener() {
             try {
-                Path path = parent.getServer().getPlugin().getDataDirectory().toPath().resolve("allowedIps.txt");
+                Path path = parent.getServer().getPlugin().getDataDirectory().resolve("allowedIps.txt");
                 if (Files.exists(path)) {
                     List<String> lines = Files.readAllLines(path);
                     for (String line : lines) {
@@ -133,7 +133,7 @@ public class ECVelocityEventManager implements ECEventManager {
         @Subscribe(order=PostOrder.LATE)
         public void onPlayerServerConnect(@NotNull ServerPreConnectEvent event) {
             if (event.getPreviousServer() == null) {
-                PlayerProxyJoinEvent newEvent = new PlayerProxyJoinEvent(new ECVelocityPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), "", event.getResult().getServer().orElseThrow().getServerInfo().getName());
+                PlayerProxyJoinEvent newEvent = new PlayerProxyJoinEvent(new ECVelocityPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), "", ECServerInfo.from(event.getResult().getServer().orElseThrow().getServerInfo()));
                 parent.emit(newEvent);
 
                 if (newEvent.isCancelled()) {
@@ -141,10 +141,10 @@ public class ECVelocityEventManager implements ECEventManager {
 
                     event.getPlayer().disconnect(ECComponentFormatter.stringToComponent(newEvent.getCancelReason()));
                 } else {
-                    event.setResult(ServerPreConnectEvent.ServerResult.allowed(parent.server.getHandle().getServer(newEvent.getTargetServer()).orElseThrow()));
+                    event.setResult(ServerPreConnectEvent.ServerResult.allowed(parent.server.getHandle().getServer(newEvent.getTargetServer().name()).orElseThrow()));
                 }
             } else {
-                PlayerServerConnectEvent newEvent = new PlayerServerConnectEvent(new ECVelocityPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), event.getResult().getServer().orElseThrow().getServerInfo().getName());
+                PlayerServerConnectEvent newEvent = new PlayerServerConnectEvent(new ECVelocityPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), ECServerInfo.from(event.getResult().getServer().orElseThrow().getServerInfo()));
                 parent.emit(newEvent);
 
                 if (newEvent.isCancelled()) {
@@ -152,14 +152,14 @@ public class ECVelocityEventManager implements ECEventManager {
 
                     event.getPlayer().sendMessage(ECComponentFormatter.stringToComponent(newEvent.getCancelReason()));
                 } else {
-                    event.setResult(ServerPreConnectEvent.ServerResult.allowed(parent.server.getHandle().getServer(newEvent.getTargetServer()).orElseThrow()));
+                    event.setResult(ServerPreConnectEvent.ServerResult.allowed(parent.server.getHandle().getServer(newEvent.getTargetServer().name()).orElseThrow()));
                 }
             }
         }
 
         @Subscribe(order=PostOrder.LATE)
         public void onPlayerServerConnect(@NotNull ServerConnectedEvent event) {
-            PlayerServerConnectedEvent newEvent = new PlayerServerConnectedEvent(new ECVelocityPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), event.getServer().getServerInfo().getName(), "");
+            PlayerServerConnectedEvent newEvent = new PlayerServerConnectedEvent(new ECVelocityPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), ECServerInfo.from(event.getServer().getServerInfo()), "");
             parent.emit(newEvent);
 
             if (!newEvent.getConnectMessage().isEmpty()) {
@@ -197,7 +197,7 @@ public class ECVelocityEventManager implements ECEventManager {
                 }
             }
 
-            PlayerProxyPingEvent newEvent = new PlayerProxyPingEvent(ECComponentFormatter.componentToString(event.getPing().getDescriptionComponent()), false, favicon, pingPlayers.isPresent() ? pingPlayers.get().getOnline() : -1, pingPlayers.isPresent() ? pingPlayers.get().getMax() : -1, players, event.getConnection().getRemoteAddress().getAddress(), event.getConnection().getVirtualHost().orElse(null));
+            ServerProxyPingEvent newEvent = new ServerProxyPingEvent(ECComponentFormatter.componentToString(event.getPing().getDescriptionComponent()), false, favicon, pingPlayers.isPresent() ? pingPlayers.get().getOnline() : -1, pingPlayers.isPresent() ? pingPlayers.get().getMax() : -1, players, event.getConnection().getRemoteAddress().getAddress(), event.getConnection().getVirtualHost().orElse(null));
             parent.emit(newEvent);
 
             ServerPing.Builder serverPing = ServerPing.builder();
@@ -419,7 +419,7 @@ public class ECVelocityEventManager implements ECEventManager {
     public ECVelocityEventManager(@NotNull ECVelocityServer server) {
         this.server = server;
 
-        this.server.getHandle().getEventManager().register(this.server.getPlugin().getHandle(), new ECVelocityEventManager.VelocityListener());
+        this.server.getHandle().getEventManager().register(this.server.getPlugin().getHandle(), new VelocityListener());
     }
 
     public @NotNull ECVelocityServer getServer() {
@@ -446,7 +446,7 @@ public class ECVelocityEventManager implements ECEventManager {
         this.server.getHandle().getEventManager().register(this.server.getPlugin().getHandle(), listener);
 
         for (Method method : listener.getClass().getDeclaredMethods()) {
-            if (method.isAnnotationPresent(ECHandler.class)) {
+            if (method.getDeclaredAnnotationsByType(ECHandler.class).length == 1) {
                 if (method.getParameterCount() == 1 && ECEvent.class.isAssignableFrom(method.getParameterTypes()[0])) {
                     if (!this.listeners.containsKey((Class<? extends ECEvent>) method.getParameterTypes()[0])) {
                         this.listeners.put((Class<? extends ECEvent>) method.getParameterTypes()[0], new ArrayList<>());
@@ -479,9 +479,9 @@ public class ECVelocityEventManager implements ECEventManager {
 
     @Override
     public void unregisterAll() {
-        for (Map.Entry<Class<? extends ECEvent>, List<Map.Entry<ECListener, Method>>> classEntry : List.copyOf(this.listeners.entrySet())) {
-            for (ECListener listener : classEntry.getValue().stream().map(Map.Entry::getKey).collect(Collectors.toSet())) {
-                this.unregister(listener);
+        for (List<Map.Entry<ECListener, Method>> listeners : List.copyOf(this.listeners.entrySet()).stream().map(Map.Entry::getValue).toList()) {
+            for (Map.Entry<ECListener, Method> listener : listeners) {
+                this.unregister(listener.getKey());
             }
         }
     }

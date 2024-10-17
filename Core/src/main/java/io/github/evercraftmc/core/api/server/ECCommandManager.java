@@ -10,7 +10,7 @@ public interface ECCommandManager {
 
     public @Nullable ECCommand getByName(@NotNull String name);
 
-    public @Nullable ECCommand getByAlias(@NotNull String name);
+    public @Nullable ECCommand getByAlias(@NotNull String alias);
 
     public @NotNull ECCommand register(@NotNull ECCommand command);
 

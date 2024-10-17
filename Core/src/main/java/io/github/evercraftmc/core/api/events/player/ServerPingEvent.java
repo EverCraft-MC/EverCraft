@@ -1,15 +1,14 @@
-package io.github.evercraftmc.core.api.events.proxy.player;
+package io.github.evercraftmc.core.api.events.player;
 
 import io.github.evercraftmc.core.api.events.ECEvent;
 import java.awt.image.BufferedImage;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
-public class PlayerProxyPingEvent extends ECEvent {
+public class ServerPingEvent extends ECEvent {
     protected @NotNull String motd;
     protected boolean centerMotd;
 
@@ -17,12 +16,9 @@ public class PlayerProxyPingEvent extends ECEvent {
 
     protected int onlinePlayers;
     protected int maxPlayers;
-    protected @NotNull Map<UUID, String> players;
+    protected @NotNull @Unmodifiable Map<UUID, String> players;
 
-    protected final @Nullable InetAddress address;
-    protected final @Nullable InetSocketAddress serverAddress;
-
-    public PlayerProxyPingEvent(@NotNull String motd, boolean centerMotd, @Nullable BufferedImage favicon, int onlinePlayers, int maxPlayers, @NotNull Map<UUID, String> players, @Nullable InetAddress address, @Nullable InetSocketAddress serverAddress) {
+    public ServerPingEvent(@NotNull String motd, boolean centerMotd, @Nullable BufferedImage favicon, int onlinePlayers, int maxPlayers, @NotNull Map<UUID, String> players) {
         this.motd = motd;
         this.centerMotd = centerMotd;
 
@@ -31,9 +27,6 @@ public class PlayerProxyPingEvent extends ECEvent {
         this.onlinePlayers = onlinePlayers;
         this.maxPlayers = maxPlayers;
         this.players = players;
-
-        this.address = address;
-        this.serverAddress = serverAddress;
     }
 
     public @NotNull String getMotd() {
@@ -76,19 +69,11 @@ public class PlayerProxyPingEvent extends ECEvent {
         this.maxPlayers = maxPlayers;
     }
 
-    public @NotNull Map<UUID, String> getPlayers() {
+    public @NotNull @Unmodifiable Map<UUID, String> getPlayers() {
         return this.players;
     }
 
     public void setPlayers(@NotNull Map<UUID, String> players) {
         this.players = Map.copyOf(players);
-    }
-
-    public @Nullable InetAddress getAddress() {
-        return this.address;
-    }
-
-    public @Nullable InetSocketAddress getServerAddress() {
-        return this.serverAddress;
     }
 }

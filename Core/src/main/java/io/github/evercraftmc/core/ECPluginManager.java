@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 public class ECPluginManager {
     protected static ECPlugin plugin;
@@ -24,13 +26,13 @@ public class ECPluginManager {
         return plugin;
     }
 
-    public static ECPlugin unregisterPlugin() {
+    public static @Nullable ECPlugin unregisterPlugin() {
         ECPlugin oldPlugin = ECPluginManager.plugin;
         ECPluginManager.plugin = null;
         return oldPlugin;
     }
 
-    public static @NotNull Collection<ECModule> getModules() {
+    public static @NotNull @Unmodifiable Collection<ECModule> getModules() {
         return Collections.unmodifiableCollection(ECPluginManager.modules.values());
     }
 

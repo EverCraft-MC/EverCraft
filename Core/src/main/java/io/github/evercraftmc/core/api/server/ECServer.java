@@ -8,6 +8,8 @@ import io.github.evercraftmc.core.impl.ECEnvironmentType;
 import java.util.Collection;
 import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 public interface ECServer {
     public @NotNull ECPlugin getPlugin();
@@ -20,24 +22,22 @@ public interface ECServer {
 
     public @NotNull ECEnvironmentType getEnvironmentType();
 
-    public @NotNull Collection<? extends ECPlayer> getPlayers();
+    public @NotNull @Unmodifiable Collection<? extends ECPlayer> getPlayers();
 
-    public ECPlayer getPlayer(@NotNull UUID uuid);
+    public @Nullable ECPlayer getPlayer(@NotNull UUID uuid);
 
-    public ECPlayer getPlayer(@NotNull String name);
+    public @Nullable ECPlayer getPlayer(@NotNull String name);
 
-    public @NotNull Collection<? extends ECPlayer> getOnlinePlayers();
+    public @NotNull @Unmodifiable Collection<? extends ECPlayer> getOnlinePlayers();
 
-    public ECPlayer getOnlinePlayer(@NotNull UUID uuid);
+    public @Nullable ECPlayer getOnlinePlayer(@NotNull UUID uuid);
 
-    public ECPlayer getOnlinePlayer(@NotNull String name);
+    public @Nullable ECPlayer getOnlinePlayer(@NotNull String name);
 
     public @NotNull ECConsole getConsole();
 
     public default void broadcastMessage(@NotNull String message) {
-        for (ECPlayer player : this.getOnlinePlayers()) {
-            player.sendMessage(message);
-        }
+        this.broadcastMessage(message, false);
     }
 
     public default void broadcastMessage(@NotNull String message, boolean includeConsole) {

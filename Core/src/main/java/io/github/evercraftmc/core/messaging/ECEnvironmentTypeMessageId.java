@@ -28,12 +28,13 @@ public class ECEnvironmentTypeMessageId extends ECMessageId {
             return this.parsedValue == server.getEnvironmentType();
         } else if (match instanceof ECEnvironment environment) {
             return this.parsedValue == environment.getType();
+        } else {
+            return false;
         }
-        return false;
     }
 
     public static void register() {
-        ECMessageId.addParser("ENVIRONMENT_TYPE", (string) -> {
+        ECMessageId.addParser("ENVIRONMENT_TYPE", string -> {
             return new ECEnvironmentTypeMessageId(ECEnvironmentType.valueOf(string));
         });
     }

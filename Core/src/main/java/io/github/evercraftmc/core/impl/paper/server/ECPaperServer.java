@@ -14,6 +14,8 @@ import java.util.UUID;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 public class ECPaperServer implements ECServer {
     protected final @NotNull ECPlugin plugin;
@@ -66,7 +68,7 @@ public class ECPaperServer implements ECServer {
     }
 
     @Override
-    public @NotNull Collection<ECPaperPlayer> getPlayers() {
+    public @NotNull @Unmodifiable Collection<ECPaperPlayer> getPlayers() {
         ArrayList<ECPaperPlayer> players = new ArrayList<>();
 
         for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) {
@@ -77,7 +79,7 @@ public class ECPaperServer implements ECServer {
     }
 
     @Override
-    public ECPaperPlayer getPlayer(@NotNull UUID uuid) {
+    public @Nullable ECPaperPlayer getPlayer(@NotNull UUID uuid) {
         if (this.plugin.getPlayerData().players.containsKey(uuid.toString())) {
             return new ECPaperPlayer(this.plugin.getPlayerData().players.get(uuid.toString()));
         }
@@ -86,7 +88,7 @@ public class ECPaperServer implements ECServer {
     }
 
     @Override
-    public ECPaperPlayer getPlayer(@NotNull String name) {
+    public @Nullable ECPaperPlayer getPlayer(@NotNull String name) {
         for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) { // TODO Name -> UUID map
             if (player.name.equalsIgnoreCase(name)) {
                 return new ECPaperPlayer(player);
@@ -97,7 +99,7 @@ public class ECPaperServer implements ECServer {
     }
 
     @Override
-    public @NotNull Collection<ECPaperPlayer> getOnlinePlayers() {
+    public @NotNull @Unmodifiable Collection<ECPaperPlayer> getOnlinePlayers() {
         ArrayList<ECPaperPlayer> players = new ArrayList<>();
 
         for (Player paperPlayer : this.handle.getOnlinePlayers()) {
@@ -110,7 +112,7 @@ public class ECPaperServer implements ECServer {
     }
 
     @Override
-    public ECPaperPlayer getOnlinePlayer(@NotNull UUID uuid) {
+    public @Nullable ECPaperPlayer getOnlinePlayer(@NotNull UUID uuid) {
         Player paperPlayer = this.handle.getPlayer(uuid);
         if (paperPlayer != null && this.plugin.getPlayerData().players.containsKey(uuid.toString())) {
             return new ECPaperPlayer(this.plugin.getPlayerData().players.get(uuid.toString()), this, paperPlayer);
@@ -120,7 +122,7 @@ public class ECPaperServer implements ECServer {
     }
 
     @Override
-    public ECPaperPlayer getOnlinePlayer(@NotNull String name) {
+    public @Nullable ECPaperPlayer getOnlinePlayer(@NotNull String name) {
         Player paperPlayer = this.handle.getPlayer(name);
         if (paperPlayer != null) {
             for (ECPlayerData.Player player : this.plugin.getPlayerData().players.values()) { // TODO Name -> UUID map
