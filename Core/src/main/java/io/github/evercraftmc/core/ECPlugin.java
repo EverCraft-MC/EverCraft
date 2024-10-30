@@ -323,6 +323,8 @@ public class ECPlugin {
         }
 
         ECPluginManager.unregisterPlugin();
+
+        FileDeleteHook.deleteAll();
     }
 
     public @NotNull Object getHandle() {

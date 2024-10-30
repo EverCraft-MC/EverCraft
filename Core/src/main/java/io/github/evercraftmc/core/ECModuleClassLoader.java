@@ -3,11 +3,8 @@ package io.github.evercraftmc.core;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
@@ -37,37 +34,7 @@ public class ECModuleClassLoader extends ClassLoader {
         this.cataloged = true;
 
         Path tempDir = Files.createTempDirectory("evercraft-");
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                Files.walkFileTree(tempDir, new FileVisitor<>() {
-                    @Override
-                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                        return FileVisitResult.CONTINUE;
-                    }
-
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                        Files.delete(file);
-
-                        return FileVisitResult.CONTINUE;
-                    }
-
-                    @Override
-                    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-                        return FileVisitResult.CONTINUE;
-                    }
-
-                    @Override
-                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                        Files.delete(dir);
-
-                        return FileVisitResult.CONTINUE;
-                    }
-                });
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }, "ECModuleClassLoader Cleanup-" + tempDir.hashCode()));
+        FileDeleteHook.add(tempDir);
 
         this.catalog(this.jarPath, tempDir);
     }
