@@ -13,6 +13,7 @@ import io.github.kale_ko.bjsl.BJSL;
 import io.github.kale_ko.bjsl.elements.ParsedObject;
 import io.github.kale_ko.bjsl.parsers.YamlParser;
 import io.github.kale_ko.bjsl.processor.ObjectProcessor;
+import io.github.kale_ko.bjsl.processor.conditions.ExpectNotNull;
 import io.github.kale_ko.ejcl.file.bjsl.StructuredBJSLFileConfig;
 import io.github.kale_ko.ejcl.mysql.StructuredMySQLConfig;
 import java.io.BufferedInputStream;
@@ -34,24 +35,25 @@ import java.util.jar.JarInputStream;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ECPlugin {
     protected static class MessagingDetails {
-        public String host = "127.0.0.1";
-        public short port = 3000;
+        @ExpectNotNull public @NotNull String host = "127.0.0.1";
+        @ExpectNotNull public short port = 3000;
 
         public UUID id = null;
     }
 
     protected static class MySQLDetails {
-        public String host;
-        public short port;
+        @ExpectNotNull public @NotNull String host = "127.0.0.1";
+        @ExpectNotNull public short port = 3306;
 
-        public String username;
-        public String password;
+        public @Nullable String username = null;
+        public @Nullable String password = null;
 
-        public String database;
+        @ExpectNotNull public @NotNull String database = "evercraft";
     }
 
     protected final @NotNull Object handle;
@@ -112,6 +114,8 @@ public class ECPlugin {
 
             this.messenger = new ECMessenger(this, new InetSocketAddress(messagingDetails.get().host, messagingDetails.get().port), messagingDetails.get().id);
             this.messenger.start();
+
+            messagingDetails.close();
         } catch (Exception e) {
             this.logger.error("Failed connecting to Messaging server", e);
             return;
@@ -126,11 +130,13 @@ public class ECPlugin {
             this.data = new StructuredMySQLConfig.Builder<>(ECPlayerData.class, mysqlDetails.get().host, mysqlDetails.get().port, mysqlDetails.get().database, "evercraft").setUsername(mysqlDetails.get().username).setPassword(mysqlDetails.get().password).setUseMariadb(true).setProcessor(new ObjectProcessor.Builder().setIgnoreNulls(true).setIgnoreEmptyObjects(true).setIgnoreDefaults(true).build()).build();
             this.data.connect();
 
+            mysqlDetails.close();
+
             this.logger.info("Loading plugin data..");
 
             this.data.load(false);
 
-            this.server.getScheduler().runTaskRepeat(this::loadData, 60 * 20, 120 * 20);
+            this.server.getScheduler().runTaskRepeat(this::loadData, 15 * 20, 30 * 20);
 
             this.logger.info("Loaded plugin data");
         } catch (Exception e) {

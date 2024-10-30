@@ -27,7 +27,10 @@ public class ECVelocityServer implements ECProxyServer {
 
     protected final @NotNull ECVelocityScheduler scheduler;
 
-    public ECVelocityServer(@NotNull ECPlugin plugin, @NotNull ProxyServer handle) {
+    protected final @NotNull String defaultServer;
+    protected final @NotNull String fallbackServer;
+
+    public ECVelocityServer(@NotNull ECPlugin plugin, @NotNull ProxyServer handle, @NotNull String defaultServer, @NotNull String fallbackServer) {
         this.plugin = plugin;
 
         this.handle = handle;
@@ -36,6 +39,9 @@ public class ECVelocityServer implements ECProxyServer {
         this.commandManager = new ECVelocityCommandManager(this);
 
         this.scheduler = new ECVelocityScheduler(this);
+
+        this.defaultServer = defaultServer;
+        this.fallbackServer = fallbackServer;
     }
 
     @Override
@@ -163,11 +169,7 @@ public class ECVelocityServer implements ECProxyServer {
 
     @Override
     public @NotNull ECServerInfo getDefaultServer() {
-        List<String> connectionOrder = this.handle.getConfiguration().getAttemptConnectionOrder();
-        if (connectionOrder.size() <= 0) {
-            throw new NullPointerException("defaultServer");
-        }
-        ECServerInfo server = this.getServer(connectionOrder.get(0));
+        ECServerInfo server = this.getServer(this.defaultServer);
         if (server == null) {
             throw new NullPointerException("defaultServer");
         }
@@ -176,11 +178,7 @@ public class ECVelocityServer implements ECProxyServer {
 
     @Override
     public @NotNull ECServerInfo getFallbackServer() {
-        List<String> connectionOrder = this.handle.getConfiguration().getAttemptConnectionOrder();
-        if (connectionOrder.size() <= 1) {
-            throw new NullPointerException("fallbackServer");
-        }
-        ECServerInfo server = this.getServer(connectionOrder.get(connectionOrder.size() - 1));
+        ECServerInfo server = this.getServer(this.fallbackServer);
         if (server == null) {
             throw new NullPointerException("fallbackServer");
         }
