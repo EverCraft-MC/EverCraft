@@ -286,9 +286,9 @@ public class ECPlugin {
                 this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Entry class does not extend ECModule");
             }
         } catch (IOException e) {
-            this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Failed to load module (\"" + moduleInfo.getEntry() + "\")");
+            this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Failed to load module \"" + moduleInfo.getEntry() + "\"", e);
         } catch (ClassNotFoundException e) {
-            this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Entry class could not be found (\"" + moduleInfo.getEntry() + "\")");
+            this.logger.error("Error loading module \"" + file.getFileName() + "\"\n  Entry class \"" + moduleInfo.getEntry() + "\" could not be found");
         }
 
         this.loadedMap.put(moduleInfo.getName().toLowerCase(), false);
