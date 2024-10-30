@@ -42,7 +42,7 @@ public class ECVelocityPluginLoader {
     public void onProxyInitialization(@NotNull ProxyInitializeEvent event) {
         ProxyDetails proxyDetails;
         try {
-            StructuredBJSLFileConfig<ProxyDetails> proxyDetailsConfig = new StructuredBJSLFileConfig.Builder<>(ProxyDetails.class, this.dataDirectory.resolve("proxy.yml").toFile(), new YamlParser.Builder().build()).build();
+            StructuredBJSLFileConfig<ProxyDetails> proxyDetailsConfig = new StructuredBJSLFileConfig.Builder<>(ProxyDetails.class, this.getDataDirectory().getParent().resolve("EverCraft").resolve("proxy.yml").toFile(), new YamlParser.Builder().build()).build();
             proxyDetailsConfig.load(true);
             proxyDetails = proxyDetailsConfig.get();
             proxyDetailsConfig.close();
