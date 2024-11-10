@@ -40,7 +40,7 @@ public class ECPaperEventManager implements ECEventManager {
         protected final @NotNull ECPaperEventManager parent = ECPaperEventManager.this;
 
         @EventHandler(priority=EventPriority.HIGH)
-        public void onPlayerJoin(@NotNull PlayerLoginEvent event) {
+        public void onPlayerLogin(@NotNull PlayerLoginEvent event) {
             if (!parent.server.getPlugin().getPlayerData().players.containsKey(event.getPlayer().getUniqueId().toString())) {
                 parent.server.getPlugin().getPlayerData().players.put(event.getPlayer().getUniqueId().toString(), new ECPlayerData.Player(event.getPlayer().getUniqueId(), event.getPlayer().getName()));
             }
@@ -83,7 +83,7 @@ public class ECPaperEventManager implements ECEventManager {
         }
 
         @EventHandler(priority=EventPriority.HIGH)
-        public void onPlayerServerConnect(@NotNull PaperServerListPingEvent event) {
+        public void onServerPing(@NotNull PaperServerListPingEvent event) {
             Map<UUID, String> players = new HashMap<>();
 
             for (PaperServerListPingEvent.ListedPlayerInfo player : event.getListedPlayers()) {

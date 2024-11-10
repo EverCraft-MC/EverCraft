@@ -8,6 +8,8 @@ import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.LoginEvent;
 import com.velocitypowered.api.event.connection.PostLoginEvent;
 import com.velocitypowered.api.event.connection.PreLoginEvent;
+import com.velocitypowered.api.event.player.KickedFromServerEvent;
+import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent;
 import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import com.velocitypowered.api.event.player.ServerPreConnectEvent;
 import com.velocitypowered.api.event.proxy.ProxyPingEvent;
@@ -86,7 +88,7 @@ public class ECVelocityEventManager implements ECEventManager {
         }
 
         @Subscribe(order=PostOrder.LATE)
-        public void onPlayerPreConnect(@NotNull PreLoginEvent event) {
+        public void onPlayerPreLogin(@NotNull PreLoginEvent event) {
             InetAddress ip = event.getConnection().getRemoteAddress().getAddress();
             if (allowedIps.containsKey(ip) && allowedIps.get(ip).matcher(event.getUsername()).matches()) {
                 event.setResult(PreLoginEvent.PreLoginComponentResult.forceOfflineMode());
@@ -94,7 +96,7 @@ public class ECVelocityEventManager implements ECEventManager {
         }
 
         @Subscribe(order=PostOrder.LATE)
-        public void onPlayerConnect(@NotNull LoginEvent event) {
+        public void onPlayerLogin(@NotNull LoginEvent event) {
             String uuid = event.getPlayer().getUniqueId().toString();
             if (!parent.server.getPlugin().getPlayerData().players.containsKey(uuid)) {
                 parent.server.getPlugin().getPlayerData().players.put(uuid, new ECPlayerData.Player(UUID.fromString(uuid), event.getPlayer().getUsername()));
@@ -131,19 +133,22 @@ public class ECVelocityEventManager implements ECEventManager {
         }
 
         @Subscribe(order=PostOrder.LATE)
-        public void onPlayerServerConnect(@NotNull ServerPreConnectEvent event) {
-            if (event.getPreviousServer() == null) {
-                PlayerProxyJoinEvent newEvent = new PlayerProxyJoinEvent(new ECVelocityPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), "", ECServerInfo.from(event.getResult().getServer().orElseThrow().getServerInfo()));
-                parent.emit(newEvent);
+        public void onPlayerChooseServer(@NotNull PlayerChooseInitialServerEvent event) {
+            PlayerProxyJoinEvent newEvent = new PlayerProxyJoinEvent(new ECVelocityPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), "", ECServerInfo.from(event.getInitialServer().orElseThrow().getServerInfo()));
+            parent.emit(newEvent);
 
-                if (newEvent.isCancelled()) {
-                    event.setResult(ServerPreConnectEvent.ServerResult.denied());
+            if (newEvent.isCancelled()) {
+                event.setInitialServer(null);
 
-                    event.getPlayer().disconnect(ECComponentFormatter.stringToComponent(newEvent.getCancelReason()));
-                } else {
-                    event.setResult(ServerPreConnectEvent.ServerResult.allowed(parent.server.getHandle().getServer(newEvent.getTargetServer().name()).orElseThrow()));
-                }
+                event.getPlayer().disconnect(ECComponentFormatter.stringToComponent(newEvent.getCancelReason()));
             } else {
+                event.setInitialServer(parent.server.getHandle().getServer(newEvent.getTargetServer().name()).orElseThrow());
+            }
+        }
+
+        @Subscribe(order=PostOrder.LATE)
+        public void onPlayerServerConnect(@NotNull ServerPreConnectEvent event) {
+            if (event.getPreviousServer() != null) {
                 PlayerServerConnectEvent newEvent = new PlayerServerConnectEvent(new ECVelocityPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), ECServerInfo.from(event.getResult().getServer().orElseThrow().getServerInfo()));
                 parent.emit(newEvent);
 
@@ -158,7 +163,7 @@ public class ECVelocityEventManager implements ECEventManager {
         }
 
         @Subscribe(order=PostOrder.LATE)
-        public void onPlayerServerConnect(@NotNull ServerConnectedEvent event) {
+        public void onPlayerServerConnected(@NotNull ServerConnectedEvent event) {
             PlayerServerConnectedEvent newEvent = new PlayerServerConnectedEvent(new ECVelocityPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), ECServerInfo.from(event.getServer().getServerInfo()), "");
             parent.emit(newEvent);
 
@@ -168,7 +173,7 @@ public class ECVelocityEventManager implements ECEventManager {
         }
 
         @Subscribe(order=PostOrder.LATE)
-        public void onPlayerServerConnect(@NotNull ProxyPingEvent event) {
+        public void onProxyPing(@NotNull ProxyPingEvent event) {
             Map<UUID, String> players = new HashMap<>();
 
             Optional<ServerPing.Players> pingPlayers = event.getPing().getPlayers();
@@ -243,6 +248,7 @@ public class ECVelocityEventManager implements ECEventManager {
         }
 
         @Subscribe(order=PostOrder.LATE)
+        @SuppressWarnings("deprecation")
         public void onPlayerChat(@NotNull com.velocitypowered.api.event.player.PlayerChatEvent event) {
             String message = event.getMessage();
             if (message.isEmpty() || message.equalsIgnoreCase("/")) {
