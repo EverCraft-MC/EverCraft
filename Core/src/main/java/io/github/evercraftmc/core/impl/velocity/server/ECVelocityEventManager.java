@@ -24,10 +24,7 @@ import io.github.evercraftmc.core.api.events.player.PlayerChatEvent;
 import io.github.evercraftmc.core.api.events.player.PlayerCommandEvent;
 import io.github.evercraftmc.core.api.events.player.PlayerJoinEvent;
 import io.github.evercraftmc.core.api.events.player.PlayerLeaveEvent;
-import io.github.evercraftmc.core.api.events.proxy.player.PlayerProxyJoinEvent;
-import io.github.evercraftmc.core.api.events.proxy.player.PlayerServerConnectEvent;
-import io.github.evercraftmc.core.api.events.proxy.player.PlayerServerConnectedEvent;
-import io.github.evercraftmc.core.api.events.proxy.player.ServerProxyPingEvent;
+import io.github.evercraftmc.core.api.events.proxy.player.*;
 import io.github.evercraftmc.core.api.server.ECEventManager;
 import io.github.evercraftmc.core.api.server.ECServerInfo;
 import io.github.evercraftmc.core.api.server.player.ECPlayer;
@@ -53,6 +50,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
 public class ECVelocityEventManager implements ECEventManager {
@@ -169,6 +167,22 @@ public class ECVelocityEventManager implements ECEventManager {
 
             if (!newEvent.getConnectMessage().isEmpty()) {
                 parent.server.broadcastMessage(newEvent.getConnectMessage());
+            }
+        }
+
+        @Subscribe(order=PostOrder.LATE)
+        public void onPlayerServerKicked(@NotNull KickedFromServerEvent event) {
+            PlayerProxyKickEvent newEvent = new PlayerProxyKickEvent(new ECVelocityPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), ECServerInfo.from(event.getServer().getServerInfo()), parent.getServer().getFallbackServer(), ECComponentFormatter.componentToString(event.getServerKickReason().orElse(Component.empty())));
+            parent.emit(newEvent);
+
+            if (newEvent.isCancelled()) {
+                event.setResult(KickedFromServerEvent.Notify.create(ECComponentFormatter.stringToComponent(newEvent.getKickMessage())));
+            } else {
+                event.setResult(KickedFromServerEvent.RedirectPlayer.create(parent.getServer().getHandle().getServer(newEvent.getToServer().name()).orElseThrow()));
+
+                if (!newEvent.getKickMessage().isEmpty()) {
+                    event.getPlayer().sendMessage(ECComponentFormatter.stringToComponent("&cFailed to connect you to " + event.getServer().getServerInfo().getName() + ":\n").append(ECComponentFormatter.stringToComponent(newEvent.getKickMessage())));
+                }
             }
         }
 
