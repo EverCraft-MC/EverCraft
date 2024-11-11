@@ -172,6 +172,10 @@ public class ECVelocityEventManager implements ECEventManager {
 
         @Subscribe(order=PostOrder.LATE)
         public void onPlayerServerKicked(@NotNull KickedFromServerEvent event) {
+            if (event.getServer().getServerInfo().getName().equalsIgnoreCase(parent.getServer().getFallbackServer().name())) {
+                return;
+            }
+
             PlayerProxyKickEvent newEvent = new PlayerProxyKickEvent(new ECVelocityPlayer(parent.server.getPlugin().getPlayerData().players.get(event.getPlayer().getUniqueId().toString()), parent.server, event.getPlayer()), ECServerInfo.from(event.getServer().getServerInfo()), parent.getServer().getFallbackServer(), ECComponentFormatter.componentToString(event.getServerKickReason().orElse(Component.empty())));
             parent.emit(newEvent);
 
